@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -114,17 +115,19 @@ namespace ComTransfer
             return true;
         }
 
+        private const int BufferSize = 100;
         private readonly Task receiveTask;
         private readonly Task sendTask;
         private readonly CancellationTokenSource cancellation;
-        private readonly Queue<string> ReceiveFileList;
-        private readonly Queue<string> SendFileList;
+        private readonly ConcurrentQueue<string> SendFileList;
+        private readonly ConcurrentQueue<string> ReceiveFileList;
+        public EventHandler<FileSystemEventArgs> ReceiveHandler;
         private bool IsStarted;
 
         public ComPort()
         {
-            ReceiveFileList = new Queue<string>(100);
-            SendFileList = new Queue<string>(100);
+            SendFileList = new ConcurrentQueue<string>();
+            ReceiveFileList = new ConcurrentQueue<string>();
 
             cancellation = new CancellationTokenSource();
             receiveTask = new Task(() =>
@@ -138,21 +141,51 @@ namespace ComTransfer
 
                 while (!cancellation.IsCancellationRequested)
                 {
-                    string path = "";
-                    int fno = 1;
-                    int comport = 2;
-                    int result = PCOMM.sio_FtZmodemRx(comport, ref path, fno, rCallBack, 27);
-                    if (result < 0)
+                    if (IsStarted)
                     {
-                        var a = 1;
+                        string path = "";
+                        int fno = 1;
+                        int comport = 2;
+                        int result = PCOMM.sio_FtZmodemRx(comport, ref path, fno, rCallBack, 27);
+                        if (!IsStarted)
+                        {
+                            continue;
+                        }
+                        if (result < 0)
+                        {
+                            var a = 1;
+                        }
+                        else
+                        {
+                            ReceiveHandler?.BeginInvoke(this, new FileSystemEventArgs(WatcherChangeTypes.Created, "", ""), null, null);
+                        }
                     }
+
+                    Thread.Sleep(50);
                 }
             }, cancellation.Token, TaskCreationOptions.LongRunning);
             sendTask = new Task(() =>
             {
+                PCOMM.xCallBack xCallBack = new PCOMM.xCallBack((long xmitlen, int buflen, byte[] buf, long flen) =>
+                {
+                    Console.WriteLine(string.Format("Send:{0}/{1}", xmitlen, flen));
+                    return 0;
+                }
+                );
+
                 while (!cancellation.IsCancellationRequested)
                 {
+                    if (IsStarted)
+                    {
+                        string fileName = "";
+                        int result = PCOMM.sio_FtZmodemTx(1, fileName, xCallBack, 27);
+                        if (result < 0)
+                        {
+                            var a = 1;
+                        }
+                    }
 
+                    Thread.Sleep(50);
                 }
             }, cancellation.Token, TaskCreationOptions.LongRunning);
         }
@@ -184,44 +217,13 @@ namespace ComTransfer
 
         public void SendFile(string fileName)
         {
-            Task.Factory.StartNew(() =>
+            SendFileList.Enqueue(fileName);
+
+            while (SendFileList.Count > BufferSize)
             {
-                PCOMM.xCallBack xCallBack = new PCOMM.xCallBack((long xmitlen, int buflen, byte[] buf, long flen) =>
-                {
-                    Console.WriteLine(string.Format("Send:{0}/{1}", xmitlen, flen));
-                    return 0;
-                }
-                );
-
-
-                string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                Directory.CreateDirectory(tempFolder);
-                FileInfo fileInfo = new FileInfo(fileName);
-                string compressedFileName = Path.Combine(tempFolder, fileInfo.Name + ".gz");
-                using (FileStream originalFileStream = new FileStream(fileName, FileMode.Open))
-                {
-                    using (FileStream compressedFileStream = File.Create(compressedFileName))
-                    {
-                        using (GZipStream compressionStream = new GZipStream(compressedFileStream, CompressionMode.Compress))
-                        {
-                            originalFileStream.CopyTo(compressionStream);
-                        }
-                    }
-                }
-                fileName = compressedFileName;
-
-                PCOMM.sio_open(1);
-                PCOMM.sio_ioctl(1, PCOMM.B115200, PCOMM.P_NONE | PCOMM.BIT_8 | PCOMM.STOP_1);
-                PCOMM.sio_flowctrl(1, 0 | 0);
-                PCOMM.sio_DTR(1, 1);
-                PCOMM.sio_RTS(1, 1);
-                PCOMM.sio_flush(1, 2);
-                int result = PCOMM.sio_FtZmodemTx(1, fileName, xCallBack, 27);
-                if (result < 0)
-                {
-                    var a = 1;
-                }
-            });
+                string unused;
+                bool result = SendFileList.TryDequeue(out unused);
+            }
         }
     }
 }
