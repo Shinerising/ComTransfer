@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.Win32;
 
 namespace ComTransfer
 {
@@ -11,8 +12,13 @@ namespace ComTransfer
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly ComPort com;
         public MainWindow()
         {
+            com = new ComPort();
+
+            DataContext = com;
+
             InitializeComponent();
         }
 
@@ -117,106 +123,43 @@ namespace ComTransfer
         {
             StartReceiveTask();
         }
-    }
-    public class ComPort
-    {
-        public string PortInfo => $"COM{PortID},{BaudRate},{DataBits},{StopBits},{Parity},RTS/CTS:{IsHW},XON/XOFF:{IsSW},RTS:{IsDTR},DTR:{IsRTS}";
-        public string PortStatus => $"";
-        public int PortID = 1;
-        public int BaudRate = 9600;
-        public int DataBits = 8;
-        public int StopBits = 1;
-        public string Parity = "NONE";
-        public bool IsHW = false;
-        public bool IsSW = false;
-        public bool IsDTR = false;
-        public bool IsRTS = false;
 
-        public bool SetPort()
+        private void Button_Start_Click(object sender, RoutedEventArgs e)
         {
-            int result;
-            int baudRate, dataBits, stopBits, parity;
+        }
 
-            switch (BaudRate)
+        private void Button_Option_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Button_Pull_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Button_Push_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void Button_Select_Click(object sender, RoutedEventArgs e)
+        {
+            string filename = string.Empty;
+            OpenFileDialog dialog = new OpenFileDialog
             {
-                case 50: baudRate = PCOMM.B50; break;
-                case 75: baudRate = PCOMM.B75; break;
-                case 110: baudRate = PCOMM.B110; break;
-                case 134: baudRate = PCOMM.B134; break;
-                case 150: baudRate = PCOMM.B150; break;
-                case 300: baudRate = PCOMM.B300; break;
-                case 600: baudRate = PCOMM.B600; break;
-                case 1200: baudRate = PCOMM.B1200; break;
-                case 1800: baudRate = PCOMM.B1800; break;
-                case 2400: baudRate = PCOMM.B2400; break;
-                case 4800: baudRate = PCOMM.B4800; break;
-                case 7200: baudRate = PCOMM.B7200; break;
-                case 9600: baudRate = PCOMM.B9600; break;
-                case 19200: baudRate = PCOMM.B19200; break;
-                case 38400: baudRate = PCOMM.B38400; break;
-                case 57600: baudRate = PCOMM.B57600; break;
-                case 115200: baudRate = PCOMM.B115200; break;
-                case 230400: baudRate = PCOMM.B230400; break;
-                case 460800: baudRate = PCOMM.B460800; break;
-                case 921600: baudRate = PCOMM.B921600; break;
-                default: baudRate = PCOMM.B9600; break;
-            }
-
-            switch (DataBits)
+                Title = "选择文件",
+                DefaultExt = ".*",
+                Multiselect = false,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Filter = "全部文件|*.*"
+            };
+            bool? result = dialog.ShowDialog();
+            if (result == true)
             {
-                case 5:dataBits = PCOMM.BIT_5;break;
-                case 6: dataBits = PCOMM.BIT_6; break;
-                case 7: dataBits = PCOMM.BIT_7; break;
-                case 8: dataBits = PCOMM.BIT_8; break;
-                default:dataBits = PCOMM.BIT_8;break;
+                filename = dialog.FileName;
             }
-
-            switch (StopBits)
-            {
-                case 1: stopBits = PCOMM.STOP_1; break;
-                case 2: stopBits = PCOMM.STOP_2; break;
-                default: stopBits = PCOMM.STOP_1; break;
-            }
-
-            switch (Parity?.ToUpper())
-            {
-                case "NONE": parity = PCOMM.P_NONE; break;
-                case "ODD": parity = PCOMM.P_ODD; break;
-                case "EVEN": parity = PCOMM.P_EVEN; break;
-                case "MARK": parity = PCOMM.P_MRK; break;
-                case "SPACE": parity = PCOMM.P_SPC; break;
-                default: parity = PCOMM.P_NONE; break;
-            }
-
-            int port = PortID;
-            int mode = dataBits | stopBits | parity;
-            int hw = IsHW ? 3 : 0;
-            int sw = IsSW ? 12 : 0;
-
-            if((result = PCOMM.sio_ioctl(port, baudRate, mode)) != PCOMM.SIO_OK)
-            {
-                throw new Exception(PCOMM.GetErrorMessage(result));
-            }
-
-            if ((result = PCOMM.sio_flowctrl(port, hw | sw)) != PCOMM.SIO_OK)
-            {
-                throw new Exception(PCOMM.GetErrorMessage(result));
-            }
-
-            if ((result = PCOMM.sio_DTR(port, IsDTR ? 1 : 0)) != PCOMM.SIO_OK)
-            {
-                throw new Exception(PCOMM.GetErrorMessage(result));
-            }
-
-            if (!IsHW)
-            {
-                if ((result = PCOMM.sio_RTS(port, IsDTR ? 1 : 0)) != PCOMM.SIO_OK)
-                {
-                    throw new Exception(PCOMM.GetErrorMessage(result));
-                }
-            }
-
-            return true;
         }
     }
 }

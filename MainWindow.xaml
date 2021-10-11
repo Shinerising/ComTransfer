@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ComTransfer"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=local:ComPort}"
-        Title="自动化串口文件备份工具" Width="340" Height="480" MinWidth="240" MinHeight="320">
+        Title="自动化串口文件备份工具" Width="340" Height="480" MinWidth="240" MinHeight="360">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Padding" Value="2,4"/>
@@ -48,6 +48,8 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,2">
             <Grid.ColumnDefinitions>
@@ -57,7 +59,7 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="串口信息"/>
             <Label Grid.Column="1" Margin="4,0" Content="{Binding PortInfo}"/>
-            <Button Grid.Column="2">
+            <Button Grid.Column="2" Click="Button_Start_Click">
                 <Path Data="M1 8L4 8M4 4L4 12L8 13L8 15L12 15L12 1L8 1L8 3ZM12 4L15 4L15 12L12 12M7 5L7 11M9 5L9 11"/>
             </Button>
         </Grid>
@@ -69,7 +71,7 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="程序设置"/>
             <Label Grid.Column="1" Margin="4,0" Content="{Binding PortInfo}"/>
-            <Button Grid.Column="2">
+            <Button Grid.Column="2" Click="Button_Option_Click">
                 <Path Data="M1 13L6 8A5 5 0 0 1 9 1L12 1L10 4L12 6L15 3A5 5 0 0 1 9 10L4 15"/>
             </Button>
         </Grid>
@@ -81,7 +83,7 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="拉取文件"/>
             <TextBox Grid.Column="1" Text="C:" Margin="4,0"/>
-            <Button Grid.Column="2">
+            <Button Grid.Column="2" Click="Button_Pull_Click">
                 <Path Data="M15 11L15 4L13 4L11 3L6 3L4 4L4 8M4 12L4 13L6 13M9 13L15 13L15 11M4 6L11 6L13 4M1 10L9 10M7 8L9 10L7 12"/>
             </Button>
         </Grid>
@@ -94,10 +96,10 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="发送文件"/>
             <TextBox Grid.Column="1" Text="C:" Margin="4,0"/>
-            <Button Grid.Column="2" Margin="0,0,4,0">
+            <Button Grid.Column="2" Margin="0,0,4,0" Click="Button_Select_Click">
                 <Path Data="M13 7L13 4L11 4L9 4L7 3L2 3L1 4L1 13M13 13L15 7L3 7L1 13Z"/>
             </Button>
-            <Button Grid.Column="3">
+            <Button Grid.Column="3" Click="Button_Push_Click">
                 <Path Data="M11 7L11 4L9 4L7 3L2 3L1 4L1 13L11 13L11 11M1 6L7 6L9 4M7 9L15 9M13 7L15 9L13 11"/>
             </Button>
         </Grid>
@@ -127,6 +129,32 @@
         </Grid>
         <Grid Grid.Row="9" Margin="0,2,0,0">
             <ListBox/>
+        </Grid>
+        <Grid Grid.Row="10" Margin="0,4,0,0">
+            <Border BorderThickness="1" BorderBrush="#9AD">
+                <Border Background="#AEF">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX=".6"/>
+                    </Border.RenderTransform>
+                </Border>
+            </Border>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
+                <TextBlock Text="上传进度"/>
+                <TextBlock Text="0/0" Margin="4,0,0,0"/>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="11" Margin="0,4,0,0">
+            <Border BorderThickness="1" BorderBrush="#9AD">
+                <Border Background="#AEF">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX=".4"/>
+                    </Border.RenderTransform>
+                </Border>
+            </Border>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
+                <TextBlock Text="下载进度"/>
+                <TextBlock Text="0/0" Margin="4,0,0,0"/>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>
