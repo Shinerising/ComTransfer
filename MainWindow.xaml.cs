@@ -12,12 +12,12 @@ namespace ComTransfer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly ComPort com;
+        private readonly ComPort port;
         public MainWindow()
         {
-            com = new ComPort();
+            port = new ComPort();
 
-            DataContext = com;
+            DataContext = port;
 
             InitializeComponent();
         }
@@ -126,6 +126,14 @@ namespace ComTransfer
 
         private void Button_Start_Click(object sender, RoutedEventArgs e)
         {
+            if (port.IsOpen)
+            {
+                port.ClosePort();
+            }
+            else
+            {
+                port.OpenPort();
+            }
         }
 
         private void Button_Option_Click(object sender, RoutedEventArgs e)
@@ -140,15 +148,14 @@ namespace ComTransfer
 
         private void Button_Push_Click(object sender, RoutedEventArgs e)
         {
-
+            port.SendFile(port.SelectedFilePath);
         }
 
         private void Button_Select_Click(object sender, RoutedEventArgs e)
         {
-            string filename = string.Empty;
             OpenFileDialog dialog = new OpenFileDialog
             {
-                Title = "选择文件",
+                Title = "选择要发送的文件",
                 DefaultExt = ".*",
                 Multiselect = false,
                 CheckFileExists = true,
@@ -158,7 +165,7 @@ namespace ComTransfer
             bool? result = dialog.ShowDialog();
             if (result == true)
             {
-                filename = dialog.FileName;
+                port.SelectFile(dialog.FileName);
             }
         }
     }

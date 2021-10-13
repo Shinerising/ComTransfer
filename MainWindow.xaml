@@ -13,6 +13,9 @@
             <Setter Property="Foreground" Value="#444466"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#666688"/>
+        </Style>
         <Style TargetType="ListBox">
             <Setter Property="Margin" Value="0"/>
         </Style>
@@ -45,7 +48,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="64"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -59,9 +62,34 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="串口信息"/>
             <Label Grid.Column="1" Margin="4,0" Content="{Binding PortInfo}"/>
-            <Button Grid.Column="2" Click="Button_Start_Click">
-                <Path Data="M1 8L4 8M4 4L4 12L8 13L8 15L12 15L12 1L8 1L8 3ZM12 4L15 4L15 12L12 12M7 5L7 11M9 5L9 11"/>
-            </Button>
+            <Border Grid.Column="2">
+                <Button Click="Button_Start_Click">
+                    <Path Data="M1 8L4 8M4 4L4 12L8 13L8 15L12 15L12 1L8 1L8 3ZM12 4L15 4L15 12L12 12M7 5L7 11M9 5L9 11"/>
+                </Button>
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsOpen}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+            </Border>
+            <Border Grid.Column="2">
+                <Button Click="Button_Start_Click">
+                    <Path Data="M1 4L1 12L5 13L5 15L9 15L9 1L5 1L5 3ZM4 5L4 11M6 5L6 11M11 6L15 10M15 6L11 10"/>
+                </Button>
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsOpen}" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+            </Border>
         </Grid>
         <Grid Grid.Row="1" Margin="0,2">
             <Grid.ColumnDefinitions>
@@ -70,7 +98,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="程序设置"/>
-            <Label Grid.Column="1" Margin="4,0" Content="{Binding PortInfo}"/>
+            <Label Grid.Column="1" Margin="4,0" Content="{Binding PortStatus}"/>
             <Button Grid.Column="2" Click="Button_Option_Click">
                 <Path Data="M1 13L6 8A5 5 0 0 1 9 1L12 1L10 4L12 6L15 3A5 5 0 0 1 9 10L4 15"/>
             </Button>
@@ -83,7 +111,7 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="拉取文件"/>
             <TextBox Grid.Column="1" Text="C:" Margin="4,0"/>
-            <Button Grid.Column="2" Click="Button_Pull_Click">
+            <Button Grid.Column="2" Click="Button_Pull_Click" IsEnabled="{Binding IsOpen}">
                 <Path Data="M15 11L15 4L13 4L11 3L6 3L4 4L4 8M4 12L4 13L6 13M9 13L15 13L15 11M4 6L11 6L13 4M1 10L9 10M7 8L9 10L7 12"/>
             </Button>
         </Grid>
@@ -95,11 +123,11 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="发送文件"/>
-            <TextBox Grid.Column="1" Text="C:" Margin="4,0"/>
+            <TextBox Grid.Column="1" Text="{Binding SelectedFilePath}" Margin="4,0"/>
             <Button Grid.Column="2" Margin="0,0,4,0" Click="Button_Select_Click">
                 <Path Data="M13 7L13 4L11 4L9 4L7 3L2 3L1 4L1 13M13 13L15 7L3 7L1 13Z"/>
             </Button>
-            <Button Grid.Column="3" Click="Button_Push_Click">
+            <Button Grid.Column="3" Click="Button_Push_Click" IsEnabled="{Binding IsOpen}">
                 <Path Data="M11 7L11 4L9 4L7 3L2 3L1 4L1 13L11 13L11 11M1 6L7 6L9 4M7 9L15 9M13 7L15 9L13 11"/>
             </Button>
         </Grid>
@@ -119,41 +147,41 @@
             </ListBox>
         </Grid>
         <Grid Grid.Row="6" Margin="0,2">
-            <Label Content="通信日志"/>
+            <Label Content="工作日志"/>
         </Grid>
         <Grid Grid.Row="7" Margin="0,2">
-            <ListBox/>
+            <ListBox local:ListBoxBehavior.ScrollOnNewItem="True" ItemsSource="{Binding LogList}"/>
         </Grid>
         <Grid Grid.Row="8" Margin="0,2">
             <Label Content="传输记录"/>
         </Grid>
         <Grid Grid.Row="9" Margin="0,2,0,0">
-            <ListBox/>
+            <ListBox local:ListBoxBehavior.ScrollOnNewItem="True"/>
         </Grid>
         <Grid Grid.Row="10" Margin="0,4,0,0">
             <Border BorderThickness="1" BorderBrush="#9AD">
                 <Border Background="#AEF">
                     <Border.RenderTransform>
-                        <ScaleTransform ScaleX=".6"/>
+                        <ScaleTransform ScaleX="{Binding SendPercent}"/>
                     </Border.RenderTransform>
                 </Border>
             </Border>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
-                <TextBlock Text="上传进度"/>
-                <TextBlock Text="0/0" Margin="4,0,0,0"/>
+                <TextBlock Text="发送进度"/>
+                <TextBlock Text="{Binding SendProgress}" Margin="4,0,0,0"/>
             </StackPanel>
         </Grid>
         <Grid Grid.Row="11" Margin="0,4,0,0">
             <Border BorderThickness="1" BorderBrush="#9AD">
                 <Border Background="#AEF">
                     <Border.RenderTransform>
-                        <ScaleTransform ScaleX=".4"/>
+                        <ScaleTransform ScaleX="{Binding ReceivePercent}"/>
                     </Border.RenderTransform>
                 </Border>
             </Border>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
-                <TextBlock Text="下载进度"/>
-                <TextBlock Text="0/0" Margin="4,0,0,0"/>
+                <TextBlock Text="接收进度"/>
+                <TextBlock Text="{Binding ReceiveProgress}" Margin="4,0,0,0"/>
             </StackPanel>
         </Grid>
     </Grid>

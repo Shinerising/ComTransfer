@@ -5,13 +5,16 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Configuration;
+using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace ComTransfer
 {
     public class ComPort : CustomINotifyPropertyChanged
     {
-        public string PortInfo => $"COM{PortID},{BaudRate},{DataBits},{StopBits},{Parity},RTS/CTS:{IsHW},XON/XOFF:{IsSW},RTS:{IsDTR},DTR:{IsRTS}";
-        public string PortStatus => $"";
+        public string PortInfo => $"COM{PortID},{BaudRate},{DataBits},{StopBits},{Parity},RTS/CTS:{IsHW},XON/XOFF:{IsSW},RTS:{IsRTS},DTR:{IsDTR}";
+        public string PortStatus { get; set; }
         public int PortID = 1;
         public int BaudRate = 9600;
         public int DataBits = 8;
@@ -21,6 +24,21 @@ namespace ComTransfer
         public bool IsSW = false;
         public bool IsDTR = false;
         public bool IsRTS = false;
+        public const int FileKey = 27;
+        public string PortOption => "工作文件夹：" + SaveDirectory;
+        public string SaveDirectory = @"D:\";
+        public string SelectedFilePath { get; set; }
+
+        public bool IsOpen { get; set; }
+
+        public long ReceiveCount = 0;
+        public long ReceiveMax = 0;
+        public string ReceiveProgress => string.Format("{0}/{1}", ReceiveCount, ReceiveMax);
+        public double ReceivePercent => ReceiveMax == 0 ? 0 : (double)ReceiveCount / ReceiveMax;
+        public long SendCount = 0;
+        public long SendMax = 0;
+        public string SendProgress => string.Format("{0}/{1}", SendCount, SendMax);
+        public double SendPercent => SendMax == 0 ? 0 : (double)SendCount / SendMax;
 
         public bool SetPort()
         {
@@ -54,11 +72,11 @@ namespace ComTransfer
 
             switch (DataBits)
             {
-                case 5:dataBits = PCOMM.BIT_5;break;
+                case 5: dataBits = PCOMM.BIT_5; break;
                 case 6: dataBits = PCOMM.BIT_6; break;
                 case 7: dataBits = PCOMM.BIT_7; break;
                 case 8: dataBits = PCOMM.BIT_8; break;
-                default:dataBits = PCOMM.BIT_8;break;
+                default: dataBits = PCOMM.BIT_8; break;
             }
 
             switch (StopBits)
@@ -83,7 +101,7 @@ namespace ComTransfer
             int hw = IsHW ? 3 : 0;
             int sw = IsSW ? 12 : 0;
 
-            if((result = PCOMM.sio_ioctl(port, baudRate, mode)) != PCOMM.SIO_OK)
+            if ((result = PCOMM.sio_ioctl(port, baudRate, mode)) != PCOMM.SIO_OK)
             {
                 throw new Exception(PCOMM.GetErrorMessage(result));
             }
@@ -100,24 +118,79 @@ namespace ComTransfer
 
             if (!IsHW)
             {
-                if ((result = PCOMM.sio_RTS(port, IsDTR ? 1 : 0)) != PCOMM.SIO_OK)
+                if ((result = PCOMM.sio_RTS(port, IsRTS ? 1 : 0)) != PCOMM.SIO_OK)
                 {
                     throw new Exception(PCOMM.GetErrorMessage(result));
                 }
             }
 
+            if ((result = PCOMM.sio_flush(port, 2)) != PCOMM.SIO_OK)
+            {
+                throw new Exception(PCOMM.GetErrorMessage(result));
+            }
+
+            return true;
+        }
+
+        public bool InitialPort()
+        {
+            PortID = int.Parse(ConfigurationManager.AppSettings["com"]);
+            BaudRate = int.Parse(ConfigurationManager.AppSettings["baudrate"]);
+            DataBits = int.Parse(ConfigurationManager.AppSettings["databits"]);
+            StopBits = int.Parse(ConfigurationManager.AppSettings["stopbits"]);
+            Parity = ConfigurationManager.AppSettings["parity"].ToUpper();
+            IsHW = ConfigurationManager.AppSettings["ishw"].ToUpper() == "TRUE";
+            IsSW = ConfigurationManager.AppSettings["issw"].ToUpper() == "TRUE";
+            IsDTR = ConfigurationManager.AppSettings["isdtr"].ToUpper() == "TRUE";
+            IsRTS = ConfigurationManager.AppSettings["isrts"].ToUpper() == "TRUE";
+
+            SaveDirectory = ConfigurationManager.AppSettings["directory"];
+
+            return SetPort();
+        }
+
+        public bool CheckOption()
+        {
             return true;
         }
 
         public bool OpenPort()
         {
+            int result;
+            if ((result = PCOMM.sio_open(PortID)) != PCOMM.SIO_OK)
+            {
+                return false;
+            }
 
+            if (!InitialPort())
+            {
+                return false;
+            }
+
+            IsOpen = true;
+            Notify(new { IsOpen });
+            StartTask();
+            return true;
+        }
+
+        public bool ClosePort()
+        {
+            int result;
+            if ((result = PCOMM.sio_close(PortID)) != PCOMM.SIO_OK)
+            {
+                return false;
+            }
+            IsOpen = false;
+            Notify(new { IsOpen });
+            StopTask();
             return true;
         }
 
         private const int BufferSize = 100;
         private readonly Task receiveTask;
         private readonly Task sendTask;
+        private readonly Task fileTask;
+        private readonly Task statusTask;
         private readonly CancellationTokenSource cancellation;
         private readonly ConcurrentQueue<string> SendFileList;
         private readonly ConcurrentQueue<string> ReceiveFileList;
@@ -134,7 +207,11 @@ namespace ComTransfer
             {
                 PCOMM.rCallBack rCallBack = new PCOMM.rCallBack((long recvlen, int buflen, byte[] buf, long flen) =>
                 {
-                    Console.WriteLine(string.Format("Receive:{0}/{1}", recvlen, flen));
+                    ReceiveCount = recvlen;
+                    ReceiveMax = flen;
+
+                    Notify(new { ReceiveProgress, ReceivePercent });
+
                     return 0;
                 }
                 );
@@ -145,8 +222,7 @@ namespace ComTransfer
                     {
                         string path = "";
                         int fno = 1;
-                        int comport = 2;
-                        int result = PCOMM.sio_FtZmodemRx(comport, ref path, fno, rCallBack, 27);
+                        int result = PCOMM.sio_FtZmodemRx(PortID, ref path, fno, rCallBack, FileKey);
                         if (!IsStarted)
                         {
                             continue;
@@ -157,6 +233,42 @@ namespace ComTransfer
                         }
                         else
                         {
+                            ReceiveFileList.Enqueue(path);
+                        }
+                    }
+
+                    Thread.Sleep(50);
+                }
+            }, cancellation.Token, TaskCreationOptions.LongRunning);
+            fileTask = new Task(() =>
+            {
+                while (!cancellation.IsCancellationRequested)
+                {
+                    if (IsStarted)
+                    {
+                        if (ReceiveFileList.Count > 0)
+                        {
+                            string filename = string.Empty;
+                            ReceiveFileList.TryDequeue(out filename);
+
+                            FileInfo fileInfo = new FileInfo(filename);
+                            if (fileInfo.Extension.ToUpper() == ".GZ")
+                            {
+                                using (FileStream originalFileStream = new FileStream(filename, FileMode.Open))
+                                {
+                                    string currentFileName = fileInfo.FullName;
+                                    string newFileName = currentFileName.Remove(currentFileName.Length - fileInfo.Extension.Length);
+
+                                    using (FileStream decompressedFileStream = File.Create(newFileName))
+                                    {
+                                        using (GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress))
+                                        {
+                                            decompressionStream.CopyTo(decompressedFileStream);
+                                        }
+                                    }
+                                }
+                            }
+
                             ReceiveHandler?.BeginInvoke(this, new FileSystemEventArgs(WatcherChangeTypes.Created, "", ""), null, null);
                         }
                     }
@@ -168,7 +280,11 @@ namespace ComTransfer
             {
                 PCOMM.xCallBack xCallBack = new PCOMM.xCallBack((long xmitlen, int buflen, byte[] buf, long flen) =>
                 {
-                    Console.WriteLine(string.Format("Send:{0}/{1}", xmitlen, flen));
+                    SendCount = xmitlen;
+                    SendMax = flen;
+
+                    Notify(new { SendProgress, SendPercent });
+
                     return 0;
                 }
                 );
@@ -177,15 +293,74 @@ namespace ComTransfer
                 {
                     if (IsStarted)
                     {
-                        string fileName = "";
-                        int result = PCOMM.sio_FtZmodemTx(1, fileName, xCallBack, 27);
-                        if (result < 0)
+                        if (SendFileList.Count > 0)
                         {
-                            var a = 1;
+                            string filename = string.Empty;
+                            SendFileList.TryDequeue(out filename);
+
+                            try
+                            {
+                                AddLog("文件发送", "检查文件属性", filename);
+                                FileInfo fileInfo = new FileInfo(filename);
+                                if (fileInfo.Exists)
+                                {
+                                    AddLog("文件发送", "正在压缩文件", filename);
+                                    string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                                    Directory.CreateDirectory(tempFolder);
+                                    string compressedFileName = Path.Combine(tempFolder, fileInfo.Name + ".gz");
+                                    using (FileStream originalFileStream = new FileStream(filename, FileMode.Open))
+                                    {
+                                        using (FileStream compressedFileStream = File.Create(compressedFileName))
+                                        {
+                                            using (GZipStream compressionStream = new GZipStream(compressedFileStream, CompressionMode.Compress))
+                                            {
+                                                originalFileStream.CopyTo(compressionStream);
+                                            }
+                                        }
+                                    }
+                                    filename = compressedFileName;
+                                }
+                                else
+                                {
+                                    AddLog("文件发送", "文件不存在", filename);
+                                    filename = null;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                AddLog("文件发送", "文件处理失败", filename);
+                                filename = null;
+                            }
+
+                            if (filename != null)
+                            {
+                                AddLog("文件发送", "正在发送文件", filename);
+                                int result = PCOMM.sio_FtZmodemTx(PortID, filename, xCallBack, FileKey);
+                                if (result < 0)
+                                {
+                                    string message = PCOMM.GetTransferErrorMessage(result);
+                                    AddLog("文件发送", "文件发送失败", filename);
+                                }
+                                else
+                                {
+                                    AddLog("文件发送", "文件发送成功", filename);
+                                }
+                            }
                         }
                     }
 
                     Thread.Sleep(50);
+                }
+            }, cancellation.Token, TaskCreationOptions.LongRunning);
+            statusTask = new Task(() =>
+            {
+                while (!cancellation.IsCancellationRequested)
+                {
+                    int result = PCOMM.sio_lstatus(PortID);
+                    PortStatus = result.ToString();
+                    Notify(new { PortStatus });
+
+                    Thread.Sleep(100);
                 }
             }, cancellation.Token, TaskCreationOptions.LongRunning);
         }
@@ -203,6 +378,16 @@ namespace ComTransfer
             {
                 sendTask.Start();
             }
+
+            if (fileTask.Status != TaskStatus.Running)
+            {
+                fileTask.Start();
+            }
+
+            if (statusTask.Status != TaskStatus.Running)
+            {
+                statusTask.Start();
+            }
         }
 
         private void StopTask()
@@ -215,15 +400,54 @@ namespace ComTransfer
 
         }
 
-        public void SendFile(string fileName)
+        public void SelectFile(string filename)
         {
-            SendFileList.Enqueue(fileName);
+            SelectedFilePath = filename;
+            Notify(new { SelectedFilePath });
+        }
+
+        public void SendFile(string filename)
+        {
+            SendFileList.Enqueue(filename);
+
+            AddLog("文件发送", "已添加文件发送任务", filename);
 
             while (SendFileList.Count > BufferSize)
             {
-                string unused;
-                bool result = SendFileList.TryDequeue(out unused);
+                bool result = SendFileList.TryDequeue(out filename);
+
+                if (result)
+                {
+                    AddLog("文件发送", "从缓冲区删除过期文件发送任务", filename);
+                }
+                else
+                {
+                    AddLog("文件发送", "删除过期发送任务失败", filename);
+                }
             }
+        }
+
+        private const int LogLimit = 200;
+        public ObservableCollection<string> LogList { get; set; } = new ObservableCollection<string>();
+
+        public void AddLog(string brief, string message, string filename = null)
+        {
+            string log = filename == null ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件名:{3}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), brief, message, filename);
+
+            Application.Current.Dispatcher.Invoke((Action)(() =>
+            {
+                LogList.Add(log);
+
+                while (LogList.Count > LogLimit)
+                {
+                    LogList.RemoveAt(0);
+                }
+            }));
+        }
+
+        public void AddTransferRecord(bool isSend, string filename)
+        {
+
         }
     }
 }

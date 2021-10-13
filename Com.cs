@@ -69,7 +69,14 @@ namespace ComTransfer
 
         public static string GetErrorMessage(int error)
         {
-            return string.Empty;
+            switch (error)
+            {
+                case 0:
+                    break;
+                default:
+                    break;
+            }
+            return null;
         }
 
         /* file transfer error code */
