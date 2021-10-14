@@ -48,11 +48,9 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="64"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="2*"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,2">
             <Grid.ColumnDefinitions>
@@ -156,33 +154,38 @@
             <Label Content="传输记录"/>
         </Grid>
         <Grid Grid.Row="9" Margin="0,2,0,0">
-            <ListBox local:ListBoxBehavior.ScrollOnNewItem="True"/>
-        </Grid>
-        <Grid Grid.Row="10" Margin="0,4,0,0">
-            <Border BorderThickness="1" BorderBrush="#9AD">
-                <Border Background="#AEF">
-                    <Border.RenderTransform>
-                        <ScaleTransform ScaleX="{Binding SendPercent}"/>
-                    </Border.RenderTransform>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <ListBox Grid.Row="0" local:ListBoxBehavior.ScrollOnNewItem="True"/>
+            <Grid Grid.Row="1" Margin="0,4,0,0">
+                <Border BorderThickness="1" BorderBrush="#9AD">
+                    <Border Background="#AEF">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="{Binding SendPercent}"/>
+                        </Border.RenderTransform>
+                    </Border>
                 </Border>
-            </Border>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
-                <TextBlock Text="发送进度"/>
-                <TextBlock Text="{Binding SendProgress}" Margin="4,0,0,0"/>
-            </StackPanel>
-        </Grid>
-        <Grid Grid.Row="11" Margin="0,4,0,0">
-            <Border BorderThickness="1" BorderBrush="#9AD">
-                <Border Background="#AEF">
-                    <Border.RenderTransform>
-                        <ScaleTransform ScaleX="{Binding ReceivePercent}"/>
-                    </Border.RenderTransform>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
+                    <TextBlock Text="发送进度"/>
+                    <TextBlock Text="{Binding SendProgress}" Margin="4,0,0,0"/>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Row="2" Margin="0,4,0,0">
+                <Border BorderThickness="1" BorderBrush="#9AD">
+                    <Border Background="#AEF">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="{Binding ReceivePercent}"/>
+                        </Border.RenderTransform>
+                    </Border>
                 </Border>
-            </Border>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
-                <TextBlock Text="接收进度"/>
-                <TextBlock Text="{Binding ReceiveProgress}" Margin="4,0,0,0"/>
-            </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
+                    <TextBlock Text="接收进度"/>
+                    <TextBlock Text="{Binding ReceiveProgress}" Margin="4,0,0,0"/>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
