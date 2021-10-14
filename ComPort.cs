@@ -146,7 +146,7 @@ namespace ComTransfer
 
             SaveDirectory = ConfigurationManager.AppSettings["directory"];
 
-            return SetPort();
+            return true;
         }
 
         public bool CheckOption()
@@ -156,13 +156,15 @@ namespace ComTransfer
 
         public bool OpenPort()
         {
+            InitialPort();
+
             int result;
             if ((result = PCOMM.sio_open(PortID)) != PCOMM.SIO_OK)
             {
                 return false;
             }
 
-            if (!InitialPort())
+            if (!SetPort())
             {
                 return false;
             }
@@ -220,7 +222,7 @@ namespace ComTransfer
                 {
                     if (IsStarted)
                     {
-                        string path = "";
+                        string path = SaveDirectory;
                         int fno = 1;
                         int result = PCOMM.sio_FtZmodemRx(PortID, ref path, fno, rCallBack, FileKey);
                         if (!IsStarted)
@@ -229,17 +231,22 @@ namespace ComTransfer
                         }
                         if (result < 0)
                         {
-                            var a = 1;
+                            AddLog("文件接收", "文件接收失败", path);
                         }
                         else
                         {
                             ReceiveFileList.Enqueue(path);
+                            AddLog("文件接收", "正在处理文件", path);
                         }
                     }
 
                     Thread.Sleep(50);
                 }
-            }, cancellation.Token, TaskCreationOptions.LongRunning);
+            }, cancellation.Token, TaskCreationOptions.LongRunning)
+            {
+
+
+            };
             fileTask = new Task(() =>
             {
                 while (!cancellation.IsCancellationRequested)
@@ -432,7 +439,7 @@ namespace ComTransfer
 
         public void AddLog(string brief, string message, string filename = null)
         {
-            string log = filename == null ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件名:{3}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), brief, message, filename);
+            string log = filename == null ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件名:{3}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), brief, message, filename);
 
             Application.Current.Dispatcher.Invoke((Action)(() =>
             {

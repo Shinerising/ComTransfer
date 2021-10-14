@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ComTransfer"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=local:ComPort}"
-        Title="自动化串口文件备份工具" Width="340" Height="480" MinWidth="240" MinHeight="360" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+        Title="自动化串口文件备份工具" Width="340" Height="480" MinWidth="240" MinHeight="360" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Icon="/app.ico">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Padding" Value="2,4"/>
@@ -161,7 +161,7 @@
             </Grid.RowDefinitions>
             <ListBox Grid.Row="0" local:ListBoxBehavior.ScrollOnNewItem="True"/>
             <Grid Grid.Row="1" Margin="0,4,0,0">
-                <Border BorderThickness="1" BorderBrush="#9AD">
+                <Border BorderThickness="1" BorderBrush="#9AD" Background="White">
                     <Border Background="#AEF">
                         <Border.RenderTransform>
                             <ScaleTransform ScaleX="{Binding SendPercent}"/>
@@ -174,7 +174,7 @@
                 </StackPanel>
             </Grid>
             <Grid Grid.Row="2" Margin="0,4,0,0">
-                <Border BorderThickness="1" BorderBrush="#9AD">
+                <Border BorderThickness="1" BorderBrush="#9AD" Background="White">
                     <Border Background="#AEF">
                         <Border.RenderTransform>
                             <ScaleTransform ScaleX="{Binding ReceivePercent}"/>
