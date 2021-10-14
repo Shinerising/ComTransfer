@@ -6,12 +6,26 @@
         xmlns:local="clr-namespace:ComTransfer"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=local:ComPort}"
-        Title="自动化串口文件备份工具" Width="340" Height="480" MinWidth="240" MinHeight="360" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Icon="/app.ico">
+        Title="自动化串口文件备份工具" Width="360" Height="560" MinWidth="240" MinHeight="360" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Icon="/app.ico">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Padding" Value="2,4"/>
             <Setter Property="Foreground" Value="#444466"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style x:Key="Label_Status" TargetType="Label">
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#8888AA"/>
+            <Setter Property="Foreground" Value="#334466"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="True">
+                    <Setter Property="BorderBrush" Value="#55AA88"/>
+                    <Setter Property="Foreground" Value="#228855"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="#666688"/>
@@ -59,7 +73,14 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="串口信息"/>
-            <Label Grid.Column="1" Margin="4,0" Content="{Binding PortInfo}"/>
+            <StackPanel Grid.Column="1" Margin="4,0" Orientation="Horizontal">
+                <Label Content="{Binding PortInfo}" Margin="0,0,4,0"/>
+                <Label Content="ON" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_Open}"/>
+                <Label Content="CTS" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_CTS}"/>
+                <Label Content="DSR" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_DSR}"/>
+                <Label Content="DCD" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_CD}"/>
+                <Label Content="RI" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_RI}"/>
+            </StackPanel>
             <Border Grid.Column="2">
                 <Button Click="Button_Start_Click">
                     <Path Data="M1 8L4 8M4 4L4 12L8 13L8 15L12 15L12 1L8 1L8 3ZM12 4L15 4L15 12L12 12M7 5L7 11M9 5L9 11"/>
@@ -96,7 +117,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="程序设置"/>
-            <Label Grid.Column="1" Margin="4,0" Content="{Binding PortStatus}"/>
+            <Label Grid.Column="1" Margin="4,0" Content="{Binding PortOption}"/>
             <Button Grid.Column="2" Click="Button_Option_Click">
                 <Path Data="M1 13L6 8A5 5 0 0 1 9 1L12 1L10 4L12 6L15 3A5 5 0 0 1 9 10L4 15"/>
             </Button>

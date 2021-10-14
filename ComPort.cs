@@ -13,8 +13,13 @@ namespace ComTransfer
 {
     public class ComPort : CustomINotifyPropertyChanged
     {
-        public string PortInfo => $"COM{PortID},{BaudRate},{DataBits},{StopBits},{Parity},RTS/CTS:{IsHW},XON/XOFF:{IsSW},RTS:{IsRTS},DTR:{IsDTR}";
-        public string PortStatus { get; set; }
+        public string PortInfo => $"COM{PortID} {BaudRate}";
+        public int PortStatus { get; set; } = -1;
+        public bool Status_Open => PortStatus >= 0;
+        public bool Status_CTS => PortStatus >= 0 ? (PortStatus & PCOMM.S_CTS) > 0 : false;
+        public bool Status_DSR => PortStatus >= 0 ? (PortStatus & PCOMM.S_DSR) > 0 : false;
+        public bool Status_RI => PortStatus >= 0 ? (PortStatus & PCOMM.S_RI) > 0 : false;
+        public bool Status_CD => PortStatus >= 0 ? (PortStatus & PCOMM.S_CD) > 0 : false;
         public int PortID = 1;
         public int BaudRate = 9600;
         public int DataBits = 8;
@@ -22,8 +27,8 @@ namespace ComTransfer
         public string Parity = "NONE";
         public bool IsHW = false;
         public bool IsSW = false;
-        public bool IsDTR = false;
-        public bool IsRTS = false;
+        public bool IsDTR = true;
+        public bool IsRTS = true;
         public const int FileKey = 27;
         public string PortOption => "工作文件夹：" + SaveDirectory;
         public string SaveDirectory = @"D:\";
@@ -146,6 +151,8 @@ namespace ComTransfer
 
             SaveDirectory = ConfigurationManager.AppSettings["directory"];
 
+            Notify(new { PortInfo });
+
             return true;
         }
 
@@ -204,6 +211,8 @@ namespace ComTransfer
             SendFileList = new ConcurrentQueue<string>();
             ReceiveFileList = new ConcurrentQueue<string>();
 
+            InitialPort();
+
             cancellation = new CancellationTokenSource();
             receiveTask = new Task(() =>
             {
@@ -213,7 +222,6 @@ namespace ComTransfer
                     ReceiveMax = flen;
 
                     Notify(new { ReceiveProgress, ReceivePercent });
-
                     return 0;
                 }
                 );
@@ -224,7 +232,9 @@ namespace ComTransfer
                     {
                         string path = SaveDirectory;
                         int fno = 1;
-                        int result = PCOMM.sio_FtZmodemRx(PortID, ref path, fno, rCallBack, FileKey);
+                        int result;
+                        result = PCOMM.sio_flush(PortID, 2);
+                        result = PCOMM.sio_FtZmodemRx(PortID, ref path, fno, rCallBack, FileKey);
                         if (!IsStarted)
                         {
                             continue;
@@ -242,11 +252,7 @@ namespace ComTransfer
 
                     Thread.Sleep(50);
                 }
-            }, cancellation.Token, TaskCreationOptions.LongRunning)
-            {
-
-
-            };
+            }, cancellation.Token, TaskCreationOptions.LongRunning);
             fileTask = new Task(() =>
             {
                 while (!cancellation.IsCancellationRequested)
@@ -291,7 +297,6 @@ namespace ComTransfer
                     SendMax = flen;
 
                     Notify(new { SendProgress, SendPercent });
-
                     return 0;
                 }
                 );
@@ -335,14 +340,16 @@ namespace ComTransfer
                             }
                             catch (Exception e)
                             {
-                                AddLog("文件发送", "文件处理失败", filename);
+                                AddLog("文件发送", "文件处理失败:" + e.Message, filename);
                                 filename = null;
                             }
 
                             if (filename != null)
                             {
                                 AddLog("文件发送", "正在发送文件", filename);
-                                int result = PCOMM.sio_FtZmodemTx(PortID, filename, xCallBack, FileKey);
+                                int result;
+                                result = PCOMM.sio_flush(PortID, 2);
+                                result = PCOMM.sio_FtZmodemTx(PortID, filename, xCallBack, FileKey);
                                 if (result < 0)
                                 {
                                     string message = PCOMM.GetTransferErrorMessage(result);
@@ -364,10 +371,10 @@ namespace ComTransfer
                 while (!cancellation.IsCancellationRequested)
                 {
                     int result = PCOMM.sio_lstatus(PortID);
-                    PortStatus = result.ToString();
-                    Notify(new { PortStatus });
+                    PortStatus = result;
+                    Notify(new { PortStatus, Status_Open, Status_DSR, Status_CTS, Status_RI, Status_CD });
 
-                    Thread.Sleep(100);
+                    Thread.Sleep(500);
                 }
             }, cancellation.Token, TaskCreationOptions.LongRunning);
         }
@@ -439,7 +446,7 @@ namespace ComTransfer
 
         public void AddLog(string brief, string message, string filename = null)
         {
-            string log = filename == null ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件名:{3}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), brief, message, filename);
+            string log = filename == null ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件:{3}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message, filename);
 
             Application.Current.Dispatcher.Invoke((Action)(() =>
             {
