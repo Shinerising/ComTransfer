@@ -36,12 +36,12 @@ namespace ComTransfer
 
         public bool IsOpen { get; set; }
 
-        public long ReceiveCount = 0;
-        public long ReceiveMax = 0;
+        public long ReceiveCount { get; set; } = 0;
+        public long ReceiveMax { get; set; } = 0;
         public string ReceiveProgress => string.Format("{0}/{1}", ReceiveCount, ReceiveMax);
         public double ReceivePercent => ReceiveMax == 0 ? 0 : (double)ReceiveCount / ReceiveMax;
-        public long SendCount = 0;
-        public long SendMax = 0;
+        public long SendCount { get; set; } = 0;
+        public long SendMax { get; set; } = 0;
         public string SendProgress => string.Format("{0}/{1}", SendCount, SendMax);
         public double SendPercent => SendMax == 0 ? 0 : (double)SendCount / SendMax;
 
@@ -129,6 +129,9 @@ namespace ComTransfer
                 }
             }
 
+            PCOMM.sio_SetReadTimeouts(port, 60000, 100);
+            PCOMM.sio_SetWriteTimeouts(port, 60000);
+
             if ((result = PCOMM.sio_flush(port, 2)) != PCOMM.SIO_OK)
             {
                 throw new Exception(PCOMM.GetErrorMessage(result));
@@ -205,6 +208,8 @@ namespace ComTransfer
         private readonly ConcurrentQueue<string> ReceiveFileList;
         public EventHandler<FileSystemEventArgs> ReceiveHandler;
         private bool IsStarted;
+        private bool IsSending;
+        private bool IsReceiving;
 
         public ComPort()
         {
@@ -214,46 +219,89 @@ namespace ComTransfer
             InitialPort();
 
             cancellation = new CancellationTokenSource();
-            receiveTask = new Task(() =>
+            receiveTask = Task.Factory.StartNew(() =>
             {
                 PCOMM.rCallBack rCallBack = new PCOMM.rCallBack((long recvlen, int buflen, byte[] buf, long flen) =>
                 {
-                    ReceiveCount = recvlen;
-                    ReceiveMax = flen;
+                    if (IsSending)
+                    {
+                        return -1;
+                    }
 
-                    Notify(new { ReceiveProgress, ReceivePercent });
-                    return 0;
+                    if (IsStarted)
+                    {
+                        if (ReceiveCount == 0 && recvlen != 0)
+                        {
+                            AddLog("文件接收", "开始接收文件");
+                        }
+
+                        ReceiveCount = recvlen;
+                        ReceiveMax = flen;
+
+                        Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent });
+
+                        return 0;
+                    }
+                    else
+                    {
+                        ReceiveCount = 0;
+                        ReceiveMax = 0;
+
+                        Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent });
+
+                        return -1;
+                    }
                 }
                 );
 
                 while (!cancellation.IsCancellationRequested)
                 {
-                    if (IsStarted)
+                    if (IsStarted && !IsSending)
                     {
-                        string path = SaveDirectory;
+                        string filename = string.Empty;
                         int fno = 1;
-                        int result;
-                        result = PCOMM.sio_flush(PortID, 2);
-                        result = PCOMM.sio_FtZmodemRx(PortID, ref path, fno, rCallBack, FileKey);
-                        if (!IsStarted)
+                        int result = 0;
+                        IsReceiving = true;
+                        try
                         {
-                            continue;
+                            result = PCOMM.sio_FtZmodemRx(PortID, ref filename, fno, rCallBack, FileKey);
+                            if (!IsStarted)
+                            {
+                                continue;
+                            }
+                            if (IsSending)
+                            {
+                                continue;
+                            }
+                            if (result < 0)
+                            {
+                                AddLog("文件接收", "文件接收失败", filename);
+                            }
+                            else
+                            {
+                                ReceiveFileList.Enqueue(filename);
+                                AddLog("文件接收", "正在处理文件", filename);
+                            }
                         }
-                        if (result < 0)
+                        catch (Exception e)
                         {
-                            AddLog("文件接收", "文件接收失败", path);
+                            AddLog("文件接收", "文件接收失败：" + e.Message, filename);
                         }
-                        else
+                        finally
                         {
-                            ReceiveFileList.Enqueue(path);
-                            AddLog("文件接收", "正在处理文件", path);
+                            IsReceiving = false;
+
+                            ReceiveCount = 0;
+                            ReceiveMax = 0;
+
+                            Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent });
                         }
                     }
 
                     Thread.Sleep(50);
                 }
-            }, cancellation.Token, TaskCreationOptions.LongRunning);
-            fileTask = new Task(() =>
+            }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            fileTask = Task.Factory.StartNew(() =>
             {
                 while (!cancellation.IsCancellationRequested)
                 {
@@ -263,41 +311,76 @@ namespace ComTransfer
                         {
                             string filename = string.Empty;
                             ReceiveFileList.TryDequeue(out filename);
+                            string shortname = filename;
+                            string targetname = filename;
 
-                            FileInfo fileInfo = new FileInfo(filename);
-                            if (fileInfo.Extension.ToUpper() == ".GZ")
+                            try
                             {
-                                using (FileStream originalFileStream = new FileStream(filename, FileMode.Open))
+                                FileInfo fileInfo = new FileInfo(filename);
+                                shortname = fileInfo.Name;
+                                if (fileInfo.Extension.ToUpper() == ".GZ")
                                 {
-                                    string currentFileName = fileInfo.FullName;
-                                    string newFileName = currentFileName.Remove(currentFileName.Length - fileInfo.Extension.Length);
-
-                                    using (FileStream decompressedFileStream = File.Create(newFileName))
+                                    AddLog("文件发送", "正在解压文件", shortname);
+                                    using (FileStream originalFileStream = new FileStream(filename, FileMode.Open))
                                     {
-                                        using (GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress))
+                                        string currentFileName = fileInfo.FullName;
+                                        targetname = Path.Combine(SaveDirectory, fileInfo.Name.Remove(fileInfo.Name.Length - fileInfo.Extension.Length));
+
+                                        using (FileStream decompressedFileStream = File.Create(targetname))
                                         {
-                                            decompressionStream.CopyTo(decompressedFileStream);
+                                            using (GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress))
+                                            {
+                                                decompressionStream.CopyTo(decompressedFileStream);
+                                            }
                                         }
                                     }
                                 }
-                            }
+                                else
+                                {
+                                    AddLog("文件发送", "正在拷贝文件", shortname);
+                                    targetname = Path.Combine(SaveDirectory, filename);
+                                    File.Copy(filename, targetname);
+                                }
 
-                            ReceiveHandler?.BeginInvoke(this, new FileSystemEventArgs(WatcherChangeTypes.Created, "", ""), null, null);
+                                File.Delete(filename);
+
+                                AddLog("文件接收", "文件接收成功", shortname);
+                                AddTransferRecord(false, targetname);
+
+                                ReceiveHandler?.BeginInvoke(this, new FileSystemEventArgs(WatcherChangeTypes.Created, "", ""), null, null);
+                            }
+                            catch (Exception e)
+                            {
+                                AddLog("文件发送", "文件处理失败：" + e.Message, shortname);
+                            }
                         }
                     }
 
                     Thread.Sleep(50);
                 }
-            }, cancellation.Token, TaskCreationOptions.LongRunning);
-            sendTask = new Task(() =>
+            }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            sendTask = Task.Factory.StartNew(() =>
             {
                 PCOMM.xCallBack xCallBack = new PCOMM.xCallBack((long xmitlen, int buflen, byte[] buf, long flen) =>
                 {
-                    SendCount = xmitlen;
-                    SendMax = flen;
+                    if (IsStarted)
+                    {
+                        SendCount = xmitlen;
+                        SendMax = flen;
 
-                    Notify(new { SendProgress, SendPercent });
-                    return 0;
+                        Notify(new { SendCount, SendMax, SendProgress, SendPercent });
+
+                        return 0;
+                    }
+                    else
+                    {
+                        SendCount = 0;
+                        SendMax = 0;
+
+                        Notify(new { SendCount, SendMax, SendProgress, SendPercent });
+
+                        return -1;
+                    }
                 }
                 );
 
@@ -309,14 +392,17 @@ namespace ComTransfer
                         {
                             string filename = string.Empty;
                             SendFileList.TryDequeue(out filename);
+                            string shortname = filename;
+                            string sourcename = filename;
 
                             try
                             {
-                                AddLog("文件发送", "检查文件属性", filename);
                                 FileInfo fileInfo = new FileInfo(filename);
+                                shortname = fileInfo.Name;
+                                AddLog("文件发送", "检查文件属性", shortname);
                                 if (fileInfo.Exists)
                                 {
-                                    AddLog("文件发送", "正在压缩文件", filename);
+                                    AddLog("文件发送", "正在压缩文件", shortname);
                                     string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                                     Directory.CreateDirectory(tempFolder);
                                     string compressedFileName = Path.Combine(tempFolder, fileInfo.Name + ".gz");
@@ -334,39 +420,66 @@ namespace ComTransfer
                                 }
                                 else
                                 {
-                                    AddLog("文件发送", "文件不存在", filename);
+                                    AddLog("文件发送", "文件不存在", shortname);
                                     filename = null;
                                 }
                             }
                             catch (Exception e)
                             {
-                                AddLog("文件发送", "文件处理失败:" + e.Message, filename);
+                                AddLog("文件发送", "文件处理失败:" + e.Message, shortname);
                                 filename = null;
                             }
 
                             if (filename != null)
                             {
-                                AddLog("文件发送", "正在发送文件", filename);
+                                AddLog("文件发送", "正在发送文件", shortname);
                                 int result;
-                                result = PCOMM.sio_flush(PortID, 2);
-                                result = PCOMM.sio_FtZmodemTx(PortID, filename, xCallBack, FileKey);
-                                if (result < 0)
+                                IsSending = true;
+                                while (IsReceiving)
                                 {
-                                    string message = PCOMM.GetTransferErrorMessage(result);
-                                    AddLog("文件发送", "文件发送失败", filename);
+                                    Thread.Sleep(10);
                                 }
-                                else
+
+                                try
                                 {
-                                    AddLog("文件发送", "文件发送成功", filename);
+                                    PCOMM.sio_flush(PortID, 2);
+                                    result = PCOMM.sio_FtZmodemTx(PortID, filename, xCallBack, FileKey);
+
+                                    if (result < 0)
+                                    {
+                                        string message = PCOMM.GetTransferErrorMessage(result);
+                                        AddLog("文件发送", "文件发送失败", shortname);
+                                    }
+                                    else
+                                    {
+                                        AddLog("文件发送", "文件发送成功", shortname);
+                                        AddTransferRecord(true, sourcename);
+                                    }
                                 }
+                                catch (Exception e)
+                                {
+                                    AddLog("文件发送", "文件发送失败：" + e.Message, shortname);
+                                }
+                                finally
+                                {
+                                    IsSending = false;
+
+                                    File.Delete(filename);
+
+                                    SendCount = 0;
+                                    SendMax = 0;
+
+                                    Notify(new { SendCount, SendMax, SendProgress, SendPercent });
+                                }
+
                             }
                         }
                     }
 
                     Thread.Sleep(50);
                 }
-            }, cancellation.Token, TaskCreationOptions.LongRunning);
-            statusTask = new Task(() =>
+            }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            statusTask = Task.Factory.StartNew(() =>
             {
                 while (!cancellation.IsCancellationRequested)
                 {
@@ -376,7 +489,7 @@ namespace ComTransfer
 
                     Thread.Sleep(500);
                 }
-            }, cancellation.Token, TaskCreationOptions.LongRunning);
+            }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
         private void StartTask()
@@ -443,10 +556,16 @@ namespace ComTransfer
 
         private const int LogLimit = 200;
         public ObservableCollection<string> LogList { get; set; } = new ObservableCollection<string>();
+        private const int RecordLimit = 100;
+        public ObservableCollection<string> RecordList { get; set; } = new ObservableCollection<string>();
 
         public void AddLog(string brief, string message, string filename = null)
         {
-            string log = filename == null ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件:{3}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message, filename);
+            if (filename != null && filename.ToUpper().EndsWith(".GZ"))
+            {
+                filename = filename.Remove(filename.Length - 3);
+            }
+            string log = filename == null ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件：{3}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message, filename);
 
             Application.Current.Dispatcher.Invoke((Action)(() =>
             {
@@ -461,7 +580,16 @@ namespace ComTransfer
 
         public void AddTransferRecord(bool isSend, string filename)
         {
+            string record = string.Format("[{0}] {1}文件：{2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), isSend ? "已发送" : "已接收", filename);
+            Application.Current.Dispatcher.Invoke((Action)(() =>
+            {
+                RecordList.Add(record);
 
+                while (RecordList.Count > RecordLimit)
+                {
+                    RecordList.RemoveAt(0);
+                }
+            }));
         }
     }
 }

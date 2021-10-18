@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.Win32;
@@ -27,35 +28,22 @@ namespace ComTransfer
             PCOMM.xCallBack xCallBack = new PCOMM.xCallBack((long xmitlen, int buflen, byte[] buf, long flen) =>
             {
                 Console.WriteLine(string.Format("Send:{0}/{1}", xmitlen, flen));
+                Thread.Sleep(1);
                 return 0;
             }
             );
 
+            PCOMM.sio_open(1);
+            PCOMM.sio_ioctl(1, PCOMM.B115200, PCOMM.P_NONE | PCOMM.BIT_8 | PCOMM.STOP_1);
+            PCOMM.sio_flowctrl(1, 0 | 0);
+            PCOMM.sio_DTR(1, 1);
+            PCOMM.sio_RTS(1, 1);
+            PCOMM.sio_SetWriteTimeouts(1, 1000000);
+            PCOMM.sio_flush(1, 2);
+
             Task.Factory.StartNew(() =>
             {
                 string fileName = @"D:\clmq.dll";
-                string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-                Directory.CreateDirectory(tempFolder);
-                FileInfo fileInfo = new FileInfo(fileName);
-                string compressedFileName = Path.Combine(tempFolder, fileInfo.Name + ".gz");
-                using (FileStream originalFileStream = new FileStream(fileName, FileMode.Open))
-                {
-                    using (FileStream compressedFileStream = File.Create(compressedFileName))
-                    {
-                        using (GZipStream compressionStream = new GZipStream(compressedFileStream, CompressionMode.Compress))
-                        {
-                            originalFileStream.CopyTo(compressionStream);
-                        }
-                    }
-                }
-                fileName = compressedFileName;
-
-                PCOMM.sio_open(1);
-                PCOMM.sio_ioctl(1, PCOMM.B115200, PCOMM.P_NONE | PCOMM.BIT_8 | PCOMM.STOP_1);
-                PCOMM.sio_flowctrl(1, 0 | 0);
-                PCOMM.sio_DTR(1, 1);
-                PCOMM.sio_RTS(1, 1);
-                PCOMM.sio_flush(1, 2);
                 int result = PCOMM.sio_FtZmodemTx(1, fileName, xCallBack, 27);
                 if (result < 0)
                 {
@@ -126,6 +114,8 @@ namespace ComTransfer
 
         private void Button_Start_Click(object sender, RoutedEventArgs e)
         {
+            //StartSendTask();
+            //return;
             if (port.IsOpen)
             {
                 port.ClosePort();
