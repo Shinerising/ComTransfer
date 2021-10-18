@@ -45,7 +45,7 @@ namespace ComTransfer
         public string SendProgress => string.Format("{0}/{1}", SendCount, SendMax);
         public double SendPercent => SendMax == 0 ? 0 : (double)SendCount / SendMax;
 
-        public bool SetPort()
+        public void SetPort()
         {
             int result;
             int baudRate, dataBits, stopBits, parity;
@@ -129,15 +129,13 @@ namespace ComTransfer
                 }
             }
 
-            PCOMM.sio_SetReadTimeouts(port, 60000, 100);
-            PCOMM.sio_SetWriteTimeouts(port, 60000);
+            //PCOMM.sio_SetReadTimeouts(port, 60000, 100);
+            //PCOMM.sio_SetWriteTimeouts(port, 60000);
 
             if ((result = PCOMM.sio_flush(port, 2)) != PCOMM.SIO_OK)
             {
                 throw new Exception(PCOMM.GetErrorMessage(result));
             }
-
-            return true;
         }
 
         public bool InitialPort()
@@ -166,16 +164,30 @@ namespace ComTransfer
 
         public bool OpenPort()
         {
-            InitialPort();
-
-            int result;
-            if ((result = PCOMM.sio_open(PortID)) != PCOMM.SIO_OK)
+            try
             {
+                InitialPort();
+            }
+            catch (Exception e)
+            {
+                AddLog("程序故障", "程序配置读取失败：" + e.Message);
                 return false;
             }
 
-            if (!SetPort())
+            try
             {
+                int result;
+                if ((result = PCOMM.sio_open(PortID)) != PCOMM.SIO_OK)
+                {
+                    AddLog("程序故障", "串口通信打开失败：" + PCOMM.GetErrorMessage(result));
+                    return false;
+                }
+
+                SetPort();
+            }
+            catch (Exception e)
+            {
+                AddLog("程序故障", "串口通信打开失败：" + e.Message);
                 return false;
             }
 
@@ -275,7 +287,8 @@ namespace ComTransfer
                             }
                             if (result < 0)
                             {
-                                AddLog("文件接收", "文件接收失败", filename);
+                                string message = PCOMM.GetTransferErrorMessage(result);
+                                AddLog("文件接收", "文件接收失败：" + message, filename);
                             }
                             else
                             {
@@ -448,7 +461,7 @@ namespace ComTransfer
                                     if (result < 0)
                                     {
                                         string message = PCOMM.GetTransferErrorMessage(result);
-                                        AddLog("文件发送", "文件发送失败", shortname);
+                                        AddLog("文件发送", "文件发送失败：" + message, shortname);
                                     }
                                     else
                                     {

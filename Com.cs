@@ -71,12 +71,32 @@ namespace ComTransfer
         {
             switch (error)
             {
-                case 0:
-                    break;
+                case SIO_BADPORT:
+                    return "串口号错误";
+                case SIO_OUTCONTROL:
+                    return "设备不兼容";
+                case SIO_NODATA:
+                    return "无可读数据";
+                case SIO_OPENFAIL:
+                    return "串口号不可用或已被占用";
+                case SIO_RTS_BY_HW:
+                    return "无法修改受硬件流控制的串口通信";
+                case SIO_BADPARM:
+                    return "参数错误";
+                case SIO_WIN32FAIL:
+                    return "Windows接口调用错误";
+                case SIO_BOARDNOTSUPPORT:
+                    return "串口命令不支持";
+                case SIO_FAIL:
+                    return "API调用错误";
+                case SIO_ABORTWRITE:
+                    return "用户取消数据写入";
+                case SIO_WRITETIMEOUT:
+                    return "数据写入超时";
+                case SIO_OK:
                 default:
-                    break;
+                    return "工作正常";
             }
-            return null;
         }
 
         /* file transfer error code */
@@ -96,7 +116,34 @@ namespace ComTransfer
 
         public static string GetTransferErrorMessage(int error)
         {
-            return string.Empty;
+            switch (error)
+            {
+                case SIOFT_BADPORT:
+                    return "串口号错误";
+                case SIOFT_TIMEOUT:
+                    return "数据通信超时";
+                case SIOFT_ABORT:
+                    return "用户取消操作";
+                case SIOFT_FUNC:
+                    return "强制终止";
+                case SIOFT_FOPEN:
+                    return "无法访问文件";
+                case SIOFT_CANABORT:
+                    return "获取到CAN字符，通信已终止";
+                case SIOFT_PROTOCOL:
+                    return "协议检查失败，通信已终止";
+                case SIOFT_SKIP:
+                    return "Zmodem协议跳过该文件";
+                case SIOFT_LACKRBUF:
+                    return "Zmodem协议接收缓冲区长度须大于2KB";
+                case SIOFT_WIN32FAIL:
+                    return "Windows接口调用错误";
+                case SIOFT_BOARDNOTSUPPORT:
+                    return "硬件设备不支持";
+                case SIOFT_OK:
+                default:
+                    return "工作正常";
+            }
         }
 
         private const string DLL_NAME = "PCOMM.dll";
