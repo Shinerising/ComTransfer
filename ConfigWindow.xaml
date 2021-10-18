@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ComTransfer"
         mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=local:ConfigWindow}"
         Title="程序配置修改窗口" SizeToContent="WidthAndHeight" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing">
     <Window.Resources>
         <Style TargetType="StackPanel">
@@ -36,43 +37,43 @@
         <WrapPanel Margin="2" Width="356" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal">
                 <Label Content="串口号"/>
-                <TextBox Text="1"/>
+                <TextBox Text="{Binding PortID}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="波特率"/>
-                <TextBox Text="19200" MinWidth="72"/>
+                <TextBox Text="{Binding BaudRate}" MinWidth="72"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="数据位"/>
-                <TextBox Text="8"/>
+                <TextBox Text="{Binding DataBits}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="停止位"/>
-                <TextBox Text="1"/>
+                <TextBox Text="{Binding StopBits}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="校验方式"/>
-                <TextBox Text="NONE" MinWidth="64"/>
+                <TextBox Text="{Binding Parity}" MinWidth="64"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="HW"/>
-                <CheckBox/>
+                <CheckBox IsChecked="{Binding IsHW}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="SW"/>
-                <CheckBox/>
+                <CheckBox IsChecked="{Binding IsSW}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="DTR"/>
-                <CheckBox/>
+                <CheckBox IsChecked="{Binding IsDTR}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="RTS"/>
-                <CheckBox/>
+                <CheckBox IsChecked="{Binding IsRTS}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="文件目录"/>
-                <TextBox Text="D:\temp" Width="288"/>
+                <TextBox Text="{Binding FolderConfig}" Width="288"/>
             </StackPanel>
         </WrapPanel>
     </Grid>

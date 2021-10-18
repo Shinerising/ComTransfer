@@ -20,9 +20,21 @@ namespace ComTransfer
     /// </summary>
     public partial class ConfigWindow : Window
     {
+        public int PortID { get; set; } = 1;
+        public int BaudRate { get; set; } = 9600;
+        public int DataBits { get; set; } = 8;
+        public int StopBits { get; set; } = 1;
+        public string Parity { get; set; } = "NONE";
+        public bool IsHW { get; set; } = false;
+        public bool IsSW { get; set; } = false;
+        public bool IsDTR { get; set; } = true;
+        public bool IsRTS { get; set; } = true;
+        public string FolderConfig { get; set; } = "";
         public ConfigWindow(Window window)
         {
             Owner = window;
+
+            DataContext = this;
 
             InitializeComponent();
         }
