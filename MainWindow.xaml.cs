@@ -114,8 +114,6 @@ namespace ComTransfer
 
         private void Button_Start_Click(object sender, RoutedEventArgs e)
         {
-            //StartSendTask();
-            //return;
             if (port.IsOpen)
             {
                 port.ClosePort();
@@ -128,7 +126,7 @@ namespace ComTransfer
 
         private void Button_Option_Click(object sender, RoutedEventArgs e)
         {
-
+            new ConfigWindow(this).ShowDialog();
         }
 
         private void Button_Pull_Click(object sender, RoutedEventArgs e)
@@ -138,6 +136,14 @@ namespace ComTransfer
 
         private void Button_Push_Click(object sender, RoutedEventArgs e)
         {
+            if (port.IsReceiving)
+            {
+                MessageBoxResult result = MessageBox.Show("发送文件会中断当前的文件接收任务，是否确定发送？", "操作提示", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                if (result != MessageBoxResult.OK)
+                {
+                    return;
+                }
+            }
             port.SendFile(port.SelectedFilePath);
         }
 

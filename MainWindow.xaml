@@ -120,9 +120,20 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="程序设置"/>
             <Label Grid.Column="1" Margin="4,0" Content="{Binding PortOption}"/>
-            <Button Grid.Column="2" Click="Button_Option_Click" ToolTip="程序设置">
-                <Path Data="M1 13L6 8A5 5 0 0 1 9 1L12 1L10 4L12 6L15 3A5 5 0 0 1 9 10L4 15"/>
-            </Button>
+            <Border Grid.Column="2">
+                <Button Grid.Column="2" Click="Button_Option_Click" ToolTip="程序设置">
+                    <Path Data="M1 13L6 8A5 5 0 0 1 9 1L12 1L10 4L12 6L15 3A5 5 0 0 1 9 10L4 15"/>
+                </Button>
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsOpen}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+            </Border>
         </Grid>
         <Grid Grid.Row="2" Margin="0,2">
             <Grid.ColumnDefinitions>
@@ -163,9 +174,7 @@
             </Button>
         </Grid>
         <Grid Grid.Row="5" Margin="0,2">
-            <ListBox>
-                <ListBoxItem Content="每天的8:00发送D:\station文件夹中新增的*.zip文件"/>
-            </ListBox>
+            <ListBox ItemsSource="{Binding TastList, Source={x:Static local:TaskManager.Instance}}"/>
         </Grid>
         <Grid Grid.Row="6" Margin="0,2">
             <Label Content="工作日志"/>

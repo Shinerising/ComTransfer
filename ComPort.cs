@@ -16,10 +16,10 @@ namespace ComTransfer
         public string PortInfo => $"COM{PortID} {BaudRate}";
         public int PortStatus { get; set; } = -1;
         public bool Status_Open => PortStatus >= 0;
-        public bool Status_CTS => PortStatus >= 0 ? (PortStatus & PCOMM.S_CTS) > 0 : false;
-        public bool Status_DSR => PortStatus >= 0 ? (PortStatus & PCOMM.S_DSR) > 0 : false;
-        public bool Status_RI => PortStatus >= 0 ? (PortStatus & PCOMM.S_RI) > 0 : false;
-        public bool Status_CD => PortStatus >= 0 ? (PortStatus & PCOMM.S_CD) > 0 : false;
+        public bool Status_CTS => PortStatus >= 0 && (PortStatus & PCOMM.S_CTS) > 0;
+        public bool Status_DSR => PortStatus >= 0 && (PortStatus & PCOMM.S_DSR) > 0;
+        public bool Status_RI => PortStatus >= 0 && (PortStatus & PCOMM.S_RI) > 0;
+        public bool Status_CD => PortStatus >= 0 && (PortStatus & PCOMM.S_CD) > 0;
         public int PortID = 1;
         public int BaudRate = 9600;
         public int DataBits = 8;
@@ -199,6 +199,7 @@ namespace ComTransfer
 
         public bool ClosePort()
         {
+            StopTask();
             int result;
             if ((result = PCOMM.sio_close(PortID)) != PCOMM.SIO_OK)
             {
@@ -206,7 +207,6 @@ namespace ComTransfer
             }
             IsOpen = false;
             Notify(new { IsOpen });
-            StopTask();
             return true;
         }
 
@@ -219,9 +219,10 @@ namespace ComTransfer
         private readonly ConcurrentQueue<string> SendFileList;
         private readonly ConcurrentQueue<string> ReceiveFileList;
         public EventHandler<FileSystemEventArgs> ReceiveHandler;
-        private bool IsStarted;
-        private bool IsSending;
-        private bool IsReceiving;
+        public bool IsStarted { get; private set; }
+        public bool IsSending { get; private set; }
+        public bool IsReceiveWaiting { get; private set; }
+        public bool IsReceiving { get; private set; }
 
         public ComPort()
         {
@@ -245,6 +246,14 @@ namespace ComTransfer
                         if (ReceiveCount == 0 && recvlen != 0)
                         {
                             AddLog("文件接收", "开始接收文件");
+                        }
+                        if (recvlen != 0)
+                        {
+                            IsReceiving = true;
+                        }
+                        else
+                        {
+                            IsReceiving = false;
                         }
 
                         ReceiveCount = recvlen;
@@ -273,7 +282,7 @@ namespace ComTransfer
                         string filename = string.Empty;
                         int fno = 1;
                         int result = 0;
-                        IsReceiving = true;
+                        IsReceiveWaiting = true;
                         try
                         {
                             result = PCOMM.sio_FtZmodemRx(PortID, ref filename, fno, rCallBack, FileKey);
@@ -302,7 +311,7 @@ namespace ComTransfer
                         }
                         finally
                         {
-                            IsReceiving = false;
+                            IsReceiveWaiting = false;
 
                             ReceiveCount = 0;
                             ReceiveMax = 0;
@@ -448,7 +457,7 @@ namespace ComTransfer
                                 AddLog("文件发送", "正在发送文件", shortname);
                                 int result;
                                 IsSending = true;
-                                while (IsReceiving)
+                                while (IsReceiveWaiting)
                                 {
                                     Thread.Sleep(10);
                                 }
@@ -533,6 +542,9 @@ namespace ComTransfer
         private void StopTask()
         {
             IsStarted = false;
+            IsSending = false;
+            IsReceiveWaiting = false;
+            IsReceiving = false;
         }
 
         public void Dispose()
@@ -578,7 +590,7 @@ namespace ComTransfer
             {
                 filename = filename.Remove(filename.Length - 3);
             }
-            string log = filename == null ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件：{3}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message, filename);
+            string log = filename == null || filename.Length == 0 ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件：{3}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message, filename);
 
             Application.Current.Dispatcher.Invoke((Action)(() =>
             {
