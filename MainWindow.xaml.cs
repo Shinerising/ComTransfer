@@ -128,6 +128,10 @@ namespace ComTransfer
         {
             new ConfigWindow(this).ShowDialog();
         }
+        private void Button_Task_Click(object sender, RoutedEventArgs e)
+        {
+            new TaskWindow(this).ShowDialog();
+        }
 
         private void Button_Pull_Click(object sender, RoutedEventArgs e)
         {

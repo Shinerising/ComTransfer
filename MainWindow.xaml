@@ -169,7 +169,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="计划任务"/>
-            <Button Grid.Column="1" Margin="4,0,0,0" ToolTip="计划任务管理">
+            <Button Grid.Column="1" Margin="4,0,0,0" Click="Button_Task_Click" ToolTip="计划任务管理">
                 <Path Data="M1 3L3 5L6 2M8 3L15 3M1 8L3 10L6 7M8 8L15 8M1 13L3 15L6 12M8 13L15 13"/>
             </Button>
         </Grid>

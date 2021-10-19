@@ -63,12 +63,19 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ComPort.cs" />
+    <Compile Include="TaskWindow.xaml.cs">
+      <DependentUpon>TaskWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ConfigWindow.xaml.cs">
       <DependentUpon>ConfigWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="ListBoxBehavior.cs" />
     <Compile Include="TaskManager.cs" />
     <Compile Include="Utility.cs" />
+    <Page Include="TaskWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="ConfigWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

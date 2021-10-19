@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,26 +9,26 @@ using System.Threading.Tasks;
 
 namespace ComTransfer
 {
+    public class TaskNode
+    {
+        public int Time { get; set; }
+        public int FileTime_Head { get; set; }
+        public int FileTime_Tail { get; set; }
+        public string Folder { get; set; }
+        public string Extension { get; set; }
+        public DateTime TriggerTime => DateTime.Now.Date + TimeSpan.FromMinutes(Time);
+        public DateTime HeadTime => DateTime.Now.Date - TimeSpan.FromMinutes(FileTime_Head);
+        public DateTime TailTime => DateTime.Now.Date - TimeSpan.FromMinutes(FileTime_Tail);
+        public string TriggerTimeText => string.Format("{0:00}:{1:00}", Time / 60, Time % 60);
+        public override string ToString()
+        {
+            return string.Format("每天{0}发送{1}文件夹中的{2}文件，修改时间区间为{3:f1}小时至{4:f1}小时", TriggerTimeText, Folder, Extension, FileTime_Head / 60d, FileTime_Tail / 60d);
+        }
+    }
     public class TaskManager
     {
-        public class TaskNode
-        {
-            public int Time { get; set; }
-            public int FileTime_Head { get; set; }
-            public int FileTime_Tail { get; set; }
-            public string Folder { get; set; }
-            public string Extension { get; set; }
-            public DateTime TriggerTime => DateTime.Now.Date + TimeSpan.FromMinutes(Time);
-            public DateTime HeadTime => DateTime.Now.Date - TimeSpan.FromMinutes(FileTime_Head);
-            public DateTime TailTime => DateTime.Now.Date - TimeSpan.FromMinutes(FileTime_Tail);
-            public string TriggerTimeText => string.Format("{0:00}:{1:00}", Time / 60, Time % 60);
-            public override string ToString()
-            {
-                return string.Format("每天{0}发送{1}文件夹中的{2}文件，修改时间区间为{3:f1}小时至{4:f1}小时", TriggerTimeText, Folder, Extension, FileTime_Head / 60d, FileTime_Tail / 60d);
-            }
-        }
         public static TaskManager Instance = new TaskManager();
-        public List<TaskNode> TaskList { get; set; } = new List<TaskNode>
+        public ObservableCollection<TaskNode> TaskList { get; set; } = new ObservableCollection<TaskNode>
         {
             new TaskNode()
             {
@@ -35,7 +36,7 @@ namespace ComTransfer
                 FileTime_Head = 12 * 60,
                 FileTime_Tail = 24 * 60,
                 Folder = @"D:\alarm",
-                Extension = "TXT"
+                Extension = "*.TXT"
             },
             new TaskNode()
             {
@@ -43,7 +44,7 @@ namespace ComTransfer
                 FileTime_Head = 12 * 60,
                 FileTime_Tail = 24 * 60,
                 Folder = @"D:\monitor",
-                Extension = "MDB"
+                Extension = "*.MDB"
             }
         };
         public EventHandler<string> FileTaskHandler;
@@ -63,8 +64,13 @@ namespace ComTransfer
                     DateTime previousTime = currentTime;
                     currentTime = DateTime.Now;
 
+                    List<TaskNode> list = TaskList.ToList();
                     foreach (TaskNode task in TaskList)
                     {
+                        if (task.Folder == null || task.Folder.Length == 0 || task.Extension == null || task.Extension.Length == 0)
+                        {
+                            continue;
+                        }
                         DateTime taskTime = task.TriggerTime;
                         if (previousTime < taskTime && currentTime >= taskTime)
                         {

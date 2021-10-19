@@ -40,10 +40,12 @@ namespace ComTransfer
         public long ReceiveMax { get; set; } = 0;
         public string ReceiveProgress => string.Format("{0}/{1}", ReceiveCount, ReceiveMax);
         public double ReceivePercent => ReceiveMax == 0 ? 0 : (double)ReceiveCount / ReceiveMax;
+        public double ReceiveTime => ReceiveMax == 0 || ReceiveMax <= ReceiveCount ? 0 : (ReceiveMax - ReceiveCount) / BaudRate * 8 * 1.2;
         public long SendCount { get; set; } = 0;
         public long SendMax { get; set; } = 0;
         public string SendProgress => string.Format("{0}/{1}", SendCount, SendMax);
         public double SendPercent => SendMax == 0 ? 0 : (double)SendCount / SendMax;
+        public double SendTime => SendMax == 0 || SendMax <= SendCount ? 0 : (SendMax - SendCount) / BaudRate * 8 * 1.2;
 
         public void SetPort()
         {
