@@ -10,7 +10,7 @@
     <Window.Resources>
         <Style TargetType="StackPanel">
             <Setter Property="Margin" Value="2"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style TargetType="Label">
@@ -64,7 +64,7 @@
             </ListBox>
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left">
                 <Border Grid.Column="0">
-                    <Button Margin="2" ToolTip="添加计划任务">
+                    <Button Margin="2" ToolTip="添加计划任务" Click="Button_Add_Click">
                         <Path Data="M1 8L15 8M8 1L8 15"/>
                     </Button>
                 </Border>
@@ -78,22 +78,22 @@
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <Button Margin="2" ToolTip="删除计划任务">
+                    <Button Margin="2" ToolTip="删除计划任务" Click="Button_Delete_Click">
                         <Path Data="M1 8L15 8"/>
                     </Button>
                 </Border>
             </StackPanel>
         </Grid>
-        <WrapPanel Grid.Column="1" Margin="2" VerticalAlignment="Top" d:DataContext="{d:DesignInstance Type=local:TaskNode}" DataContext="{Binding SelectedItem, ElementName=ListBox_Task}">
-            <WrapPanel.Style>
-                <Style TargetType="WrapPanel">
+        <StackPanel Grid.Column="1" Margin="2" VerticalAlignment="Top" d:DataContext="{d:DesignInstance Type=local:TaskNode}" DataContext="{Binding SelectedItem, ElementName=ListBox_Task}">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding}" Value="{x:Null}">
                             <Setter Property="IsEnabled" Value="False"/>
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </WrapPanel.Style>
+            </StackPanel.Style>
             <StackPanel Orientation="Horizontal">
                 <Label Content="启动时间"/>
                 <TextBox Text="{Binding Time}" Width="50"/>
@@ -120,6 +120,6 @@
                 <TextBox Text="{Binding FileTime_Tail}" MinWidth="50"/>
                 <Label Content="分钟"/>
             </StackPanel>
-        </WrapPanel>
+        </StackPanel>
     </Grid>
 </Window>

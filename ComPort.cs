@@ -344,7 +344,7 @@ namespace ComTransfer
                                 shortname = fileInfo.Name;
                                 if (fileInfo.Extension.ToUpper() == ".GZ")
                                 {
-                                    AddLog("文件发送", "正在解压文件", shortname);
+                                    AddLog("文件接收", "正在解压文件", shortname);
                                     using (FileStream originalFileStream = new FileStream(filename, FileMode.Open))
                                     {
                                         string currentFileName = fileInfo.FullName;
@@ -359,9 +359,22 @@ namespace ComTransfer
                                         }
                                     }
                                 }
+                                else if (fileInfo.Extension.ToUpper() == ".APPCOMMAND")
+                                {
+                                    AddLog("文件接收", "正在解析指令", shortname);
+                                    try
+                                    {
+                                        string text = File.ReadAllText(filename);
+                                        ResolveCommand(text);
+                                    }
+                                    catch
+                                    {
+
+                                    }
+                                }
                                 else
                                 {
-                                    AddLog("文件发送", "正在拷贝文件", shortname);
+                                    AddLog("文件接收", "正在拷贝文件", shortname);
                                     targetname = Path.Combine(SaveDirectory, filename);
                                     File.Copy(filename, targetname);
                                 }
@@ -424,7 +437,12 @@ namespace ComTransfer
                                 FileInfo fileInfo = new FileInfo(filename);
                                 shortname = fileInfo.Name;
                                 AddLog("文件发送", "检查文件属性", shortname);
-                                if (fileInfo.Exists)
+                                if (!fileInfo.Exists)
+                                {
+                                    AddLog("文件发送", "文件不存在", shortname);
+                                    filename = null;
+                                }
+                                else
                                 {
                                     AddLog("文件发送", "正在压缩文件", shortname);
                                     string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -441,11 +459,6 @@ namespace ComTransfer
                                         }
                                     }
                                     filename = compressedFileName;
-                                }
-                                else
-                                {
-                                    AddLog("文件发送", "文件不存在", shortname);
-                                    filename = null;
                                 }
                             }
                             catch (Exception e)
@@ -590,6 +603,19 @@ namespace ComTransfer
             }
         }
 
+        private void ResolveCommand(string command)
+        {
+            if (command == null)
+            {
+                return;
+            }
+            else if (command.StartsWith("fetch"))
+            {
+                string filename = command.Substring(5).Trim();
+                SendFile(filename);
+            }
+        }
+
         private const int LogLimit = 200;
         public ObservableCollection<string> LogList { get; set; } = new ObservableCollection<string>();
         private const int RecordLimit = 100;
@@ -597,7 +623,11 @@ namespace ComTransfer
 
         public void AddLog(string brief, string message, string filename = null)
         {
-            if (filename != null && filename.ToUpper().EndsWith(".GZ"))
+            if (filename != null && filename.ToUpper().EndsWith(".APPCOMMAND"))
+            {
+                filename = null;
+            }
+            else if (filename != null && filename.ToUpper().EndsWith(".GZ"))
             {
                 filename = filename.Remove(filename.Length - 3);
             }

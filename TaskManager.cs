@@ -14,8 +14,8 @@ namespace ComTransfer
         public int Time { get; set; }
         public int FileTime_Head { get; set; }
         public int FileTime_Tail { get; set; }
-        public string Folder { get; set; }
-        public string Extension { get; set; }
+        public string Folder { get; set; } = @"C:\";
+        public string Extension { get; set; } = "*.*";
         public DateTime TriggerTime => DateTime.Now.Date + TimeSpan.FromMinutes(Time);
         public DateTime HeadTime => DateTime.Now.Date - TimeSpan.FromMinutes(FileTime_Head);
         public DateTime TailTime => DateTime.Now.Date - TimeSpan.FromMinutes(FileTime_Tail);

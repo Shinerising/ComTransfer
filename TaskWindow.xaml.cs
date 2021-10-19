@@ -30,5 +30,15 @@ namespace ComTransfer
         {
 
         }
+
+        private void Button_Add_Click(object sender, RoutedEventArgs e)
+        {
+            TaskList.Add(new TaskNode());
+        }
+
+        private void Button_Delete_Click(object sender, RoutedEventArgs e)
+        {
+            TaskList.Remove(ListBox_Task.SelectedItem as TaskNode);
+        }
     }
 }
