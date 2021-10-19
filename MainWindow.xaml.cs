@@ -168,5 +168,10 @@ namespace ComTransfer
                 port.SelectFile(dialog.FileName);
             }
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            port.Dispose();
+        }
     }
 }

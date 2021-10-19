@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Configuration;
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Linq;
 
 namespace ComTransfer
 {
@@ -30,8 +31,10 @@ namespace ComTransfer
         public bool IsDTR = true;
         public bool IsRTS = true;
         public const int FileKey = 27;
-        public string PortOption => "工作文件夹：" + SaveDirectory;
-        public string SaveDirectory = @"D:\";
+        public string PortOption => SaveDirectory;
+        private Dictionary<string, string> directoryDict;
+        private const string DefaultDirectory = @"C:\";
+        public string SaveDirectory = DefaultDirectory;
         public string SelectedFilePath { get; set; }
 
         public bool IsOpen { get; set; }
@@ -158,6 +161,86 @@ namespace ComTransfer
 
             return true;
         }
+        public string GetDirectory(string extension)
+        {
+            if (directoryDict == null)
+            {
+                if (SaveDirectory == null || SaveDirectory.Length == 0)
+                {
+                    return DefaultDirectory;
+                }
+                directoryDict = new Dictionary<string, string>();
+                foreach (string option in SaveDirectory.Split(';'))
+                {
+                    string[] options = option.Split(':');
+                    if (options.Length >= 2)
+                    {
+                        directoryDict.Add(options[0], options[1]);
+                    }
+                }
+                if (!directoryDict.ContainsKey("*"))
+                {
+                    directoryDict.Add("*", DefaultDirectory);
+                }
+            }
+            if (extension == null)
+            {
+                return DefaultDirectory;
+            }
+            else if (!directoryDict.ContainsKey(extension.ToUpper()))
+            {
+                return directoryDict["*"];
+            }
+            else
+            {
+                return directoryDict[extension.ToUpper()];
+            }
+        }
+        public void SaveAllConfig()
+        {
+            SaveConfig(PortID, "com");
+            SaveConfig(BaudRate, "baudrate");
+            SaveConfig(DataBits, "databits");
+            SaveConfig(StopBits, "stopbits");
+            SaveConfig(Parity, "parity");
+            SaveConfig(IsHW, "ishw");
+            SaveConfig(IsSW, "issw");
+            SaveConfig(IsDTR, "isdtr");
+            SaveConfig(IsRTS, "isrts");
+            SaveConfig(SaveDirectory, "directory");
+        }
+        private void SaveConfig<T>(T param, string key)
+        {
+            try
+            {
+                if (param != null)
+                {
+                    Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    if (configuration.AppSettings.Settings.AllKeys.Contains(key))
+                    {
+                        configuration.AppSettings.Settings[key].Value = param.ToString();
+                    }
+                    else
+                    {
+
+                        configuration.AppSettings.Settings.Add(key, param.ToString());
+                    }
+                    configuration.Save(ConfigurationSaveMode.Minimal, true);
+                    ConfigurationManager.RefreshSection("appSettings");
+                }
+                else
+                {
+                    Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    configuration.AppSettings.Settings.Remove(key);
+                    configuration.Save(ConfigurationSaveMode.Minimal, true);
+                    ConfigurationManager.RefreshSection("appSettings");
+                }
+            }
+            catch
+            {
+
+            }
+        }
 
         public bool CheckOption()
         {
@@ -231,7 +314,14 @@ namespace ComTransfer
             SendFileList = new ConcurrentQueue<string>();
             ReceiveFileList = new ConcurrentQueue<string>();
 
-            InitialPort();
+            try
+            {
+                InitialPort();
+            }
+            catch
+            {
+
+            }
 
             cancellation = new CancellationTokenSource();
             receiveTask = Task.Factory.StartNew(() =>
@@ -348,7 +438,8 @@ namespace ComTransfer
                                     using (FileStream originalFileStream = new FileStream(filename, FileMode.Open))
                                     {
                                         string currentFileName = fileInfo.FullName;
-                                        targetname = Path.Combine(SaveDirectory, fileInfo.Name.Remove(fileInfo.Name.Length - fileInfo.Extension.Length));
+                                        string outputFileName = fileInfo.Name.Remove(fileInfo.Name.Length - fileInfo.Extension.Length);
+                                        targetname = Path.Combine(GetDirectory(new FileInfo(outputFileName).Extension), fileInfo.Name.Remove(fileInfo.Name.Length - fileInfo.Extension.Length));
 
                                         using (FileStream decompressedFileStream = File.Create(targetname))
                                         {
@@ -375,7 +466,7 @@ namespace ComTransfer
                                 else
                                 {
                                     AddLog("文件接收", "正在拷贝文件", shortname);
-                                    targetname = Path.Combine(SaveDirectory, filename);
+                                    targetname = Path.Combine(GetDirectory(fileInfo.Extension), filename);
                                     File.Copy(filename, targetname);
                                 }
 
@@ -442,7 +533,7 @@ namespace ComTransfer
                                     AddLog("文件发送", "文件不存在", shortname);
                                     filename = null;
                                 }
-                                else
+                                else if(fileInfo.Extension.ToUpper() != "APPCOMMAND")
                                 {
                                     AddLog("文件发送", "正在压缩文件", shortname);
                                     string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -573,7 +664,7 @@ namespace ComTransfer
 
         public void Dispose()
         {
-
+            cancellation.Cancel();
         }
 
         public void SelectFile(string filename)
@@ -603,6 +694,11 @@ namespace ComTransfer
             }
         }
 
+        private void SubmitCommand(string command, string param)
+        {
+
+        }
+
         private void ResolveCommand(string command)
         {
             if (command == null)
@@ -623,13 +719,13 @@ namespace ComTransfer
 
         public void AddLog(string brief, string message, string filename = null)
         {
-            if (filename != null && filename.ToUpper().EndsWith(".APPCOMMAND"))
-            {
-                filename = null;
-            }
-            else if (filename != null && filename.ToUpper().EndsWith(".GZ"))
+            if (filename != null && filename.ToUpper().EndsWith(".GZ"))
             {
                 filename = filename.Remove(filename.Length - 3);
+            }
+            if (filename != null && filename.ToUpper().EndsWith(".APPCOMMAND"))
+            {
+                return;
             }
             string log = filename == null || filename.Length == 0 ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件：{3}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message, filename);
 
@@ -646,6 +742,10 @@ namespace ComTransfer
 
         public void AddTransferRecord(bool isSend, string filename)
         {
+            if (filename != null && filename.ToUpper().EndsWith(".APPCOMMAND"))
+            {
+                return;
+            }
             string record = string.Format("[{0}] {1}文件：{2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), isSend ? "已发送" : "已接收", filename);
             Application.Current.Dispatcher.Invoke((Action)(() =>
             {
