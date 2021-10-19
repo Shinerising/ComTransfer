@@ -514,9 +514,16 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
+        private void FileTaskHandler(object sender, string file)
+        {
+            SendFile(file);
+        }
+
         private void StartTask()
         {
             IsStarted = true;
+
+            TaskManager.Instance.FileTaskHandler += FileTaskHandler;
 
             if (receiveTask.Status != TaskStatus.Running)
             {
@@ -541,6 +548,8 @@ namespace ComTransfer
 
         private void StopTask()
         {
+            TaskManager.Instance.FileTaskHandler -= FileTaskHandler;
+
             IsStarted = false;
             IsSending = false;
             IsReceiveWaiting = false;

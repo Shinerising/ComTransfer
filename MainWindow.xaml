@@ -174,7 +174,7 @@
             </Button>
         </Grid>
         <Grid Grid.Row="5" Margin="0,2">
-            <ListBox ItemsSource="{Binding TastList, Source={x:Static local:TaskManager.Instance}}"/>
+            <ListBox ItemsSource="{Binding TaskList, Source={x:Static local:TaskManager.Instance}}"/>
         </Grid>
         <Grid Grid.Row="6" Margin="0,2">
             <Label Content="工作日志"/>
