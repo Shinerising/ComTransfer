@@ -161,7 +161,7 @@ namespace ComTransfer
 
             SaveDirectory = ConfigurationManager.AppSettings["directory"];
 
-            Notify(new { PortInfo });
+            Notify(new { PortInfo, PortOption });
 
             return true;
         }
@@ -176,7 +176,7 @@ namespace ComTransfer
                 directoryDict = new Dictionary<string, string>();
                 foreach (string option in SaveDirectory.Split(';'))
                 {
-                    string[] options = option.Split(':');
+                    string[] options = option.Split('>');
                     if (options.Length >= 2)
                     {
                         directoryDict.Add(options[0], options[1]);
@@ -198,51 +198,6 @@ namespace ComTransfer
             else
             {
                 return directoryDict[extension.ToUpper()];
-            }
-        }
-        public void SaveAllConfig()
-        {
-            SaveConfig(PortID, "com");
-            SaveConfig(BaudRate, "baudrate");
-            SaveConfig(DataBits, "databits");
-            SaveConfig(StopBits, "stopbits");
-            SaveConfig(Parity, "parity");
-            SaveConfig(IsHW, "ishw");
-            SaveConfig(IsSW, "issw");
-            SaveConfig(IsDTR, "isdtr");
-            SaveConfig(IsRTS, "isrts");
-            SaveConfig(SaveDirectory, "directory");
-        }
-        private void SaveConfig<T>(T param, string key)
-        {
-            try
-            {
-                if (param != null)
-                {
-                    Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    if (configuration.AppSettings.Settings.AllKeys.Contains(key))
-                    {
-                        configuration.AppSettings.Settings[key].Value = param.ToString();
-                    }
-                    else
-                    {
-
-                        configuration.AppSettings.Settings.Add(key, param.ToString());
-                    }
-                    configuration.Save(ConfigurationSaveMode.Minimal, true);
-                    ConfigurationManager.RefreshSection("appSettings");
-                }
-                else
-                {
-                    Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    configuration.AppSettings.Settings.Remove(key);
-                    configuration.Save(ConfigurationSaveMode.Minimal, true);
-                    ConfigurationManager.RefreshSection("appSettings");
-                }
-            }
-            catch
-            {
-
             }
         }
 
@@ -471,7 +426,7 @@ namespace ComTransfer
                                 {
                                     AddLog("文件接收", "正在拷贝文件", shortname);
                                     targetname = Path.Combine(GetDirectory(fileInfo.Extension), filename);
-                                    File.Copy(filename, targetname);
+                                    File.Copy(filename, targetname, true);
                                 }
 
                                 File.Delete(filename);

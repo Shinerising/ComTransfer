@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,12 +37,72 @@ namespace ComTransfer
 
             DataContext = this;
 
+            PortID = int.Parse(ConfigurationManager.AppSettings["com"]);
+            BaudRate = int.Parse(ConfigurationManager.AppSettings["baudrate"]);
+            DataBits = int.Parse(ConfigurationManager.AppSettings["databits"]);
+            StopBits = int.Parse(ConfigurationManager.AppSettings["stopbits"]);
+            Parity = ConfigurationManager.AppSettings["parity"].ToUpper();
+            IsHW = ConfigurationManager.AppSettings["ishw"].ToUpper() == "TRUE";
+            IsSW = ConfigurationManager.AppSettings["issw"].ToUpper() == "TRUE";
+            IsDTR = ConfigurationManager.AppSettings["isdtr"].ToUpper() == "TRUE";
+            IsRTS = ConfigurationManager.AppSettings["isrts"].ToUpper() == "TRUE";
+
+            FolderConfig = ConfigurationManager.AppSettings["directory"];
+
             InitializeComponent();
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            FocusManager.SetFocusedElement(this, this);
 
+            SaveAllConfig();
+        }
+        public void SaveAllConfig()
+        {
+            SaveConfig(PortID, "com");
+            SaveConfig(BaudRate, "baudrate");
+            SaveConfig(DataBits, "databits");
+            SaveConfig(StopBits, "stopbits");
+            SaveConfig(Parity, "parity");
+            SaveConfig(IsHW, "ishw");
+            SaveConfig(IsSW, "issw");
+            SaveConfig(IsDTR, "isdtr");
+            SaveConfig(IsRTS, "isrts");
+            SaveConfig(FolderConfig, "directory");
+        }
+
+        private void SaveConfig<T>(T param, string key)
+        {
+            try
+            {
+                if (param != null)
+                {
+                    Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    if (configuration.AppSettings.Settings.AllKeys.Contains(key))
+                    {
+                        configuration.AppSettings.Settings[key].Value = param.ToString();
+                    }
+                    else
+                    {
+
+                        configuration.AppSettings.Settings.Add(key, param.ToString());
+                    }
+                    configuration.Save(ConfigurationSaveMode.Minimal, true);
+                    ConfigurationManager.RefreshSection("appSettings");
+                }
+                else
+                {
+                    Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                    configuration.AppSettings.Settings.Remove(key);
+                    configuration.Save(ConfigurationSaveMode.Minimal, true);
+                    ConfigurationManager.RefreshSection("appSettings");
+                }
+            }
+            catch
+            {
+
+            }
         }
     }
 }

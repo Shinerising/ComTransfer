@@ -127,6 +127,15 @@ namespace ComTransfer
         private void Button_Option_Click(object sender, RoutedEventArgs e)
         {
             new ConfigWindow(this).ShowDialog();
+
+            try
+            {
+                port.InitialPort();
+            }
+            catch
+            {
+
+            }
         }
         private void Button_Task_Click(object sender, RoutedEventArgs e)
         {
