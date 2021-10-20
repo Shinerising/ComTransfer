@@ -140,10 +140,14 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="拉取文件"/>
             <TextBox Grid.Column="1" Text="{Binding PullFilePath}" Margin="4,0"/>
-            <Button Grid.Column="2" Click="Button_Pull_Click" IsEnabled="{Binding IsOpen}" ToolTip="拉取文件">
+            <Button Grid.Column="2" Margin="0,0,4,0" IsEnabled="{Binding IsOpen}" Click="Button_SelectRemote_Click" ToolTip="选择远端文件">
+                <Path Data="M10 4L9 4L7 3L2 3L1 4L1 13M13 13L15 7L3 7L1 13ZM11 3L15 3M13 1L13 5"/>
+            </Button>
+            <Button Grid.Column="3" Click="Button_Pull_Click" IsEnabled="{Binding IsOpen}" ToolTip="拉取文件">
                 <Path Data="M15 11L15 4L13 4L11 3L6 3L4 4L4 8M4 12L4 13L6 13M9 13L15 13L15 11M4 6L11 6L13 4M1 10L9 10M7 8L9 10L7 12"/>
             </Button>
         </Grid>

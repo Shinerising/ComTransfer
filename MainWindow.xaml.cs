@@ -179,6 +179,9 @@ namespace ComTransfer
                 port.SelectFile(dialog.FileName);
             }
         }
+        private void Button_SelectRemote_Click(object sender, RoutedEventArgs e)
+        {
+        }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
