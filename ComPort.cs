@@ -9,6 +9,7 @@ using System.Configuration;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Linq;
+using System.Text;
 
 namespace ComTransfer
 {
@@ -36,6 +37,7 @@ namespace ComTransfer
         private const string DefaultDirectory = @"C:\";
         public string SaveDirectory = DefaultDirectory;
         public string SelectedFilePath { get; set; }
+        public string PullFilePath { get; set; }
 
         public bool IsOpen { get; set; }
 
@@ -43,12 +45,14 @@ namespace ComTransfer
         public long ReceiveMax { get; set; } = 0;
         public string ReceiveProgress => string.Format("{0}/{1}", ReceiveCount, ReceiveMax);
         public double ReceivePercent => ReceiveMax == 0 ? 0 : (double)ReceiveCount / ReceiveMax;
-        public double ReceiveTime => ReceiveMax == 0 || ReceiveMax <= ReceiveCount ? 0 : (ReceiveMax - ReceiveCount) / BaudRate * 8 * 1.2;
+        public double ReceiveTime => ReceiveMax == 0 || ReceiveMax <= ReceiveCount ? 0 : (double)(ReceiveMax - ReceiveCount) / BaudRate * 8 * 1.7;
+        public string ReceiveTimeText => ReceiveTime > 60 ? string.Format("{0:0}分钟{1:0}秒", ReceiveTime / 60, (int)ReceiveTime % 60) : string.Format("{0:0}秒", ReceiveTime);
         public long SendCount { get; set; } = 0;
         public long SendMax { get; set; } = 0;
         public string SendProgress => string.Format("{0}/{1}", SendCount, SendMax);
         public double SendPercent => SendMax == 0 ? 0 : (double)SendCount / SendMax;
-        public double SendTime => SendMax == 0 || SendMax <= SendCount ? 0 : (SendMax - SendCount) / BaudRate * 8 * 1.2;
+        public double SendTime => SendMax == 0 || SendMax <= SendCount ? 0 : (double)(SendMax - SendCount) / BaudRate * 8 * 1.7;
+        public string SendTimeText => SendTime > 60 ? string.Format("{0:0}分钟{1:0}秒", SendTime / 60, (int)SendTime % 60) : string.Format("{0:0}秒", SendTime);
 
         public void SetPort()
         {
@@ -351,7 +355,7 @@ namespace ComTransfer
                         ReceiveCount = recvlen;
                         ReceiveMax = flen;
 
-                        Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent });
+                        Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent, ReceiveTimeText });
 
                         return 0;
                     }
@@ -360,7 +364,7 @@ namespace ComTransfer
                         ReceiveCount = 0;
                         ReceiveMax = 0;
 
-                        Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent });
+                        Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent, ReceiveTimeText });
 
                         return -1;
                     }
@@ -408,7 +412,7 @@ namespace ComTransfer
                             ReceiveCount = 0;
                             ReceiveMax = 0;
 
-                            Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent });
+                            Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent, ReceiveTimeText });
                         }
                     }
 
@@ -496,7 +500,7 @@ namespace ComTransfer
                         SendCount = xmitlen;
                         SendMax = flen;
 
-                        Notify(new { SendCount, SendMax, SendProgress, SendPercent });
+                        Notify(new { SendCount, SendMax, SendProgress, SendPercent, SendTimeText });
 
                         return 0;
                     }
@@ -505,7 +509,7 @@ namespace ComTransfer
                         SendCount = 0;
                         SendMax = 0;
 
-                        Notify(new { SendCount, SendMax, SendProgress, SendPercent });
+                        Notify(new { SendCount, SendMax, SendProgress, SendPercent, SendTimeText });
 
                         return -1;
                     }
@@ -522,7 +526,7 @@ namespace ComTransfer
                             SendFileList.TryDequeue(out filename);
                             string shortname = filename;
                             string sourcename = filename;
-
+                            string tempFolder = null;
                             try
                             {
                                 FileInfo fileInfo = new FileInfo(filename);
@@ -533,10 +537,10 @@ namespace ComTransfer
                                     AddLog("文件发送", "文件不存在", shortname);
                                     filename = null;
                                 }
-                                else if(fileInfo.Extension.ToUpper() != "APPCOMMAND")
+                                else if(fileInfo.Extension.ToUpper() != ".APPCOMMAND")
                                 {
                                     AddLog("文件发送", "正在压缩文件", shortname);
-                                    string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                                    tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                                     Directory.CreateDirectory(tempFolder);
                                     string compressedFileName = Path.Combine(tempFolder, fileInfo.Name + ".gz");
                                     using (FileStream originalFileStream = new FileStream(filename, FileMode.Open))
@@ -593,11 +597,15 @@ namespace ComTransfer
                                     IsSending = false;
 
                                     File.Delete(filename);
+                                    if (tempFolder != null)
+                                    {
+                                        Directory.Delete(tempFolder, true);
+                                    }
 
                                     SendCount = 0;
                                     SendMax = 0;
 
-                                    Notify(new { SendCount, SendMax, SendProgress, SendPercent });
+                                    Notify(new { SendCount, SendMax, SendProgress, SendPercent, SendTimeText });
                                 }
 
                             }
@@ -694,9 +702,36 @@ namespace ComTransfer
             }
         }
 
-        private void SubmitCommand(string command, string param)
+        public void SubmitCommand(string command, string param)
         {
+            if (command == null || command.Trim().Length == 0)
+            {
+                return;
+            }
+            if (param == null || param.Trim().Length == 0)
+            {
+                return;
+            }
 
+            AddLog("命令发送", "发送文件拉取命令" );
+
+            try
+            {
+                string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                Directory.CreateDirectory(tempFolder);
+                string filename = Path.Combine(tempFolder, DateTime.Now.ToString("yyyyMMddHHmmss") + ".APPCOMMAND");
+
+                using (StreamWriter sw = new StreamWriter(filename, false, Encoding.UTF8))
+                {
+                    sw.Write(string.Format("{0} {1}", command, param));
+                }
+
+                SendFile(filename);
+            }
+            catch (Exception e)
+            {
+                AddLog("命令发送", "命令发送失败：" + e.Message);
+            }
         }
 
         private void ResolveCommand(string command)

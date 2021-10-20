@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ComTransfer"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=local:ComPort}"
-        Title="自动化串口文件传输工具" Width="380" Height="560" MinWidth="240" MinHeight="360" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing" Icon="/app.ico">
+        Title="自动化串口文件传输工具" Width="380" Height="560" MinWidth="280" MinHeight="360" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing" Icon="/app.ico">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Padding" Value="2,4"/>
@@ -142,7 +142,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="拉取文件"/>
-            <TextBox Grid.Column="1" Text="C:" Margin="4,0"/>
+            <TextBox Grid.Column="1" Text="{Binding PullFilePath}" Margin="4,0"/>
             <Button Grid.Column="2" Click="Button_Pull_Click" IsEnabled="{Binding IsOpen}" ToolTip="拉取文件">
                 <Path Data="M15 11L15 4L13 4L11 3L6 3L4 4L4 8M4 12L4 13L6 13M9 13L15 13L15 11M4 6L11 6L13 4M1 10L9 10M7 8L9 10L7 12"/>
             </Button>
@@ -201,8 +201,10 @@
                     </Border>
                 </Border>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
-                    <TextBlock Text="发送进度"/>
+                    <TextBlock Text="发送进度："/>
                     <TextBlock Text="{Binding SendProgress}" Margin="4,0,0,0"/>
+                    <TextBlock Text="剩余时间：" Margin="8,0,0,0"/>
+                    <TextBlock Text="{Binding SendTimeText}"/>
                 </StackPanel>
                 <Grid.Style>
                     <Style TargetType="Grid">
@@ -223,8 +225,10 @@
                     </Border>
                 </Border>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
-                    <TextBlock Text="接收进度"/>
-                    <TextBlock Text="{Binding ReceiveProgress}" Margin="4,0,0,0"/>
+                    <TextBlock Text="接收进度："/>
+                    <TextBlock Text="{Binding ReceiveProgress}"/>
+                    <TextBlock Text="剩余时间：" Margin="8,0,0,0"/>
+                    <TextBlock Text="{Binding ReceiveTimeText}"/>
                 </StackPanel>
                 <Grid.Style>
                     <Style TargetType="Grid">

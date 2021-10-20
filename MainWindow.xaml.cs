@@ -135,7 +135,7 @@ namespace ComTransfer
 
         private void Button_Pull_Click(object sender, RoutedEventArgs e)
         {
-
+            port.SubmitCommand("fetch", port.PullFilePath);
         }
 
         private void Button_Push_Click(object sender, RoutedEventArgs e)
