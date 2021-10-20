@@ -1,0 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfTask xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<Task Time="480" FileTime_Head="720" FileTime_Tail="1440" Folder="D:\alarm" Extension="*.TXT"/>
+</ArrayOfTask>

@@ -1,6 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 
 namespace ComTransfer
 {
@@ -23,7 +25,9 @@ namespace ComTransfer
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            FocusManager.SetFocusedElement(this, this);
 
+            TaskManager.SaveData(TaskList.ToList());
         }
 
         private void ListBox_Selected(object sender, RoutedEventArgs e)

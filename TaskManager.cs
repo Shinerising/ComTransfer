@@ -6,15 +6,27 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace ComTransfer
 {
+    [Serializable]
+    [XmlType(TypeName = "Task")]
     public class TaskNode
     {
+        [XmlAttribute]
         public int Time { get; set; }
+
+        [XmlAttribute]
         public int FileTime_Head { get; set; }
+
+        [XmlAttribute]
         public int FileTime_Tail { get; set; }
+
+        [XmlAttribute]
         public string Folder { get; set; } = @"C:\";
+
+        [XmlAttribute]
         public string Extension { get; set; } = "*.*";
         public DateTime TriggerTime => DateTime.Now.Date + TimeSpan.FromMinutes(Time);
         public DateTime HeadTime => DateTime.Now.Date - TimeSpan.FromMinutes(FileTime_Head);
@@ -28,29 +40,49 @@ namespace ComTransfer
     public class TaskManager
     {
         public static TaskManager Instance = new TaskManager();
-        public ObservableCollection<TaskNode> TaskList { get; set; } = new ObservableCollection<TaskNode>
+        public ObservableCollection<TaskNode> TaskList { get; set; }
+        public static List<TaskNode> ReadData()
         {
-            new TaskNode()
+            try
             {
-                Time = 480,
-                FileTime_Head = 12 * 60,
-                FileTime_Tail = 24 * 60,
-                Folder = @"D:\alarm",
-                Extension = "*.TXT"
-            },
-            new TaskNode()
-            {
-                Time = 640,
-                FileTime_Head = 12 * 60,
-                FileTime_Tail = 24 * 60,
-                Folder = @"D:\monitor",
-                Extension = "*.MDB"
+                using (StreamReader sr = new StreamReader("TaskList.xml", Encoding.UTF8))
+                {
+                    XmlSerializer reader = new XmlSerializer(typeof(List<TaskNode>));
+                    return reader.Deserialize(sr) as List<TaskNode>;
+                }
             }
-        };
+            catch
+            {
+                return new List<TaskNode>();
+            }
+        }
+
+        public static void SaveData(List<TaskNode> list)
+        {
+            try
+            {
+                using (StreamWriter sw = new StreamWriter("TaskList.xml", false, Encoding.UTF8))
+                {
+                    XmlSerializer writer = new XmlSerializer(typeof(List<TaskNode>));
+                    writer.Serialize(sw, list);
+                }
+            }
+            catch
+            {
+            }
+        }
         public EventHandler<string> FileTaskHandler;
         private TaskManager()
         {
+            TaskList = new ObservableCollection<TaskNode>();
+            ReadData().ForEach(item => TaskList.Add(item));
             Start();
+        }
+
+        public void Refresh()
+        {
+            TaskList.Clear();
+            ReadData().ForEach(item => TaskList.Add(item));
         }
 
         private void Start()

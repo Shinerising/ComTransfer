@@ -140,6 +140,8 @@ namespace ComTransfer
         private void Button_Task_Click(object sender, RoutedEventArgs e)
         {
             new TaskWindow(this).ShowDialog();
+
+            TaskManager.Instance.Refresh();
         }
 
         private void Button_Pull_Click(object sender, RoutedEventArgs e)
