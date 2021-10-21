@@ -659,6 +659,16 @@ namespace ComTransfer
 
         public void SubmitCommand(string command, string param)
         {
+            if (command.StartsWith("requestfile"))
+            {
+                string root = param;
+                string result = GetFileTreeText(root);
+                LastCommand = "responsefile " + result;
+                return;
+            }
+
+
+
             if (command == null || command.Trim().Length == 0)
             {
                 return;
@@ -689,8 +699,11 @@ namespace ComTransfer
             }
         }
 
+        public string LastCommand;
+
         private void ResolveCommand(string command)
         {
+            LastCommand = command;
             if (command == null)
             {
                 return;
@@ -700,6 +713,57 @@ namespace ComTransfer
                 string filename = command.Substring(5).Trim();
                 SendFile(filename);
             }
+            else if (command.StartsWith("requestfile"))
+            {
+                string root = command.Substring(11);
+                string result = GetFileTreeText(root);
+                LastCommand = "responsefile " + result;
+            }
+        }
+
+        private string GetFileTreeText(string root)
+        {
+            try
+            {
+                if (root == "")
+                {
+                    return string.Join("|", DriveInfo.GetDrives().Select(item => "D>" + item));
+                }
+                int count = 0;
+                int rootLength = root.Length;
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (string entry in Directory.EnumerateFileSystemEntries(root))
+                {
+                    FileAttributes attributes = File.GetAttributes(entry);
+
+                    if (attributes.HasFlag(FileAttributes.Hidden))
+                    {
+                        continue;
+                    }
+                    else if (attributes.HasFlag(FileAttributes.Directory))
+                    {
+                        stringBuilder.Append("F>");
+                        stringBuilder.Append(entry.Substring(rootLength).TrimStart('\\'));
+                        stringBuilder.Append("|");
+                    }
+                    else
+                    {
+                        stringBuilder.Append(entry.Substring(rootLength).TrimStart('\\'));
+                        stringBuilder.Append("|");
+                    }
+
+                    count += 1;
+                    if (count >= 1000)
+                    {
+                        break;
+                    }
+                }
+                return stringBuilder.ToString();
+            }
+            catch
+            {
+            }
+            return string.Empty;
         }
 
         private const int LogLimit = 200;

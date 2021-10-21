@@ -181,11 +181,29 @@ namespace ComTransfer
         }
         private void Button_SelectRemote_Click(object sender, RoutedEventArgs e)
         {
+            new FileWindow(this).ShowDialog();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             port.Dispose();
+        }
+
+        public void SubmitCommand(string command, string param)
+        {
+            port.SubmitCommand(command, param);
+        }
+
+        public string LastCommand
+        {
+            get
+            {
+                return port.LastCommand;
+            }
+            set
+            {
+                port.LastCommand = value;
+            }
         }
     }
 }
