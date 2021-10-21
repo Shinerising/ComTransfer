@@ -630,6 +630,12 @@ namespace ComTransfer
             cancellation.Cancel();
         }
 
+        public void SelectRemotePath(string filename)
+        {
+            PullFilePath = filename;
+            Notify(new { PullFilePath });
+        }
+
         public void SelectFile(string filename)
         {
             SelectedFilePath = filename;
@@ -659,26 +665,16 @@ namespace ComTransfer
 
         public void SubmitCommand(string command, string param)
         {
-            if (command.StartsWith("requestfile"))
-            {
-                string root = param;
-                string result = GetFileTreeText(root);
-                LastCommand = "responsefile " + result;
-                return;
-            }
-
-
-
             if (command == null || command.Trim().Length == 0)
             {
                 return;
             }
-            if (param == null || param.Trim().Length == 0)
+            if (param == null)
             {
                 return;
             }
 
-            AddLog("命令发送", "发送文件拉取命令" );
+            AddLog("命令发送", "发送程序操作命令" );
 
             try
             {
@@ -716,8 +712,7 @@ namespace ComTransfer
             else if (command.StartsWith("requestfile"))
             {
                 string root = command.Substring(11);
-                string result = GetFileTreeText(root);
-                LastCommand = "responsefile " + result;
+                Task.Factory.StartNew(() => SubmitCommand("responsefile", GetFileTreeText(root)));
             }
         }
 
@@ -725,7 +720,7 @@ namespace ComTransfer
         {
             try
             {
-                if (root == "")
+                if (root == null || root.Trim() == "")
                 {
                     return string.Join("|", DriveInfo.GetDrives().Select(item => "D>" + item));
                 }

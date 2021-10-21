@@ -181,7 +181,12 @@ namespace ComTransfer
         }
         private void Button_SelectRemote_Click(object sender, RoutedEventArgs e)
         {
-            new FileWindow(this).ShowDialog();
+            FileWindow window = new FileWindow(this);
+            bool? result = window.ShowDialog();
+            if (result == true)
+            {
+                port.SelectRemotePath(window.Path);
+            }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

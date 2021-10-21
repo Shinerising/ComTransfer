@@ -22,7 +22,7 @@ namespace ComTransfer
     /// </summary>
     public partial class FileWindow : Window
     {
-        public static List<FileNode> FileRoot { get; set; } = new List<FileNode>(){
+        public List<FileNode> FileRoot { get; set; } = new List<FileNode>(){
             new FileNode(){ FileName = "远端计算机" }
         };
         public string Path { get; set; }
