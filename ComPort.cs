@@ -341,13 +341,14 @@ namespace ComTransfer
                 }
                 );
 
+                byte[] buffer = new byte[260];
+                GCHandle pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+                IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+
                 while (!cancellation.IsCancellationRequested)
                 {
                     if (IsStarted && !IsSending)
                     {
-                        byte[] buffer = new byte[260];
-                        GCHandle pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                        IntPtr pointer = pinnedArray.AddrOfPinnedObject();
                         string filename = string.Empty;
                         int fno = 1;
                         int result = 0;
@@ -361,7 +362,6 @@ namespace ComTransfer
                             IsReceiveWaiting = true;
                             result = PCOMM.sio_FtZmodemRx(PortID, ref pointer, fno, rCallBack, FileKey);
                             filename = Encoding.Default.GetString(buffer).TrimEnd('\0');
-                            pinnedArray.Free();
                             if (!IsStarted)
                             {
                                 continue;
@@ -398,6 +398,8 @@ namespace ComTransfer
 
                     Thread.Sleep(50);
                 }
+
+                pinnedArray.Free();
             }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             fileTask = Task.Factory.StartNew(() =>
             {

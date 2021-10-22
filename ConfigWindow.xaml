@@ -37,23 +37,23 @@
         <WrapPanel Margin="2" Width="380" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal">
                 <Label Content="串口号"/>
-                <TextBox Text="{Binding PortID}"/>
+                <TextBox Text="{Binding PortID}" MaxLength="2"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="波特率"/>
-                <TextBox Text="{Binding BaudRate}" MinWidth="72"/>
+                <TextBox Text="{Binding BaudRate}" MinWidth="72" MaxLength="7"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="数据位"/>
-                <TextBox Text="{Binding DataBits}"/>
+                <TextBox Text="{Binding DataBits}" MaxLength="1"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="停止位"/>
-                <TextBox Text="{Binding StopBits}"/>
+                <TextBox Text="{Binding StopBits}" MaxLength="1"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="校验方式"/>
-                <TextBox Text="{Binding Parity}" MinWidth="72"/>
+                <TextBox Text="{Binding Parity}" MinWidth="72" MaxLength="6"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="HW"/>
@@ -75,6 +75,12 @@
                 <Label Content="文件目录"/>
                 <TextBox Text="{Binding FolderConfig}" Width="300"/>
             </StackPanel>
+            <Grid Width="380">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <CheckBox Content="是否允许开机自动启动" Margin="4,2" Height="24" HorizontalAlignment="Center"/>
+                    <CheckBox Content="是否启动后立即开始工作" Margin="4,2" Height="24" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </WrapPanel>
     </Grid>
 </Window>
