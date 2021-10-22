@@ -71,7 +71,18 @@ namespace ComTransfer
             {
             }
         }
-        public EventHandler<string> FileTaskHandler;
+        public class FileTaskEventArgs : EventArgs
+        {
+            private readonly string filename;
+
+            public FileTaskEventArgs(string filename)
+            {
+                this.filename = filename;
+            }
+
+            public string File => this.filename;
+        }
+        public EventHandler<FileTaskEventArgs> FileTaskHandler;
         private TaskManager()
         {
             TaskList = new ObservableCollection<TaskNode>();
@@ -115,7 +126,7 @@ namespace ComTransfer
                                     {
                                         if (fileInfo.LastWriteTime >= task.TailTime && fileInfo.LastWriteTime <= task.HeadTime)
                                         {
-                                            FileTaskHandler?.Invoke(this, fileInfo.FullName);
+                                            FileTaskHandler?.Invoke(this, new FileTaskEventArgs(fileInfo.FullName));
                                         }
                                     }
                                 }

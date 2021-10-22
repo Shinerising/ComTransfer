@@ -33,8 +33,8 @@ namespace ComTransfer
         public bool IsDTR = true;
         public bool IsRTS = true;
         public const int FileKey = 27;
-        public string PortOption => SaveDirectory;
-        private Dictionary<string, string> directoryDict;
+        public List<string> PortOption => directoryDict.Select(item => string.Format("{0}>[{1}]", item.Key, item.Value)).ToList();
+        private readonly Dictionary<string, string> directoryDict = new Dictionary<string, string>();
         private const string DefaultDirectory = @"C:\";
         public string SaveDirectory = DefaultDirectory;
         public string SelectedFilePath { get; set; }
@@ -59,6 +59,7 @@ namespace ComTransfer
         {
             int result;
             int baudRate, dataBits, stopBits, parity;
+            bool customBaudRate = false;
 
             switch (BaudRate)
             {
@@ -82,7 +83,7 @@ namespace ComTransfer
                 case 230400: baudRate = PCOMM.B230400; break;
                 case 460800: baudRate = PCOMM.B460800; break;
                 case 921600: baudRate = PCOMM.B921600; break;
-                default: baudRate = PCOMM.B9600; break;
+                default: baudRate = PCOMM.B9600; customBaudRate = true; break;
             }
 
             switch (DataBits)
@@ -119,6 +120,14 @@ namespace ComTransfer
             if ((result = PCOMM.sio_ioctl(port, baudRate, mode)) != PCOMM.SIO_OK)
             {
                 throw new Exception(PCOMM.GetErrorMessage(result));
+            }
+
+            if (customBaudRate)
+            {
+                if ((result = PCOMM.sio_baud(port, BaudRate)) != PCOMM.SIO_OK)
+                {
+                    throw new Exception(PCOMM.GetErrorMessage(result));
+                }
             }
 
             if ((result = PCOMM.sio_flowctrl(port, hw | sw)) != PCOMM.SIO_OK)
@@ -162,33 +171,38 @@ namespace ComTransfer
 
             SaveDirectory = ConfigurationManager.AppSettings["directory"];
 
+            InitialDirectory();
+
             Notify(new { PortInfo, PortOption });
 
             return true;
         }
-        public string GetDirectory(string extension)
+        private void InitialDirectory()
         {
-            if (directoryDict == null)
+            directoryDict.Clear();
+            if (SaveDirectory != null)
             {
-                if (SaveDirectory == null || SaveDirectory.Length == 0)
-                {
-                    return DefaultDirectory;
-                }
-                directoryDict = new Dictionary<string, string>();
-                foreach (string option in SaveDirectory.Split(';'))
+                foreach (string option in SaveDirectory.Split('|'))
                 {
                     string[] options = option.Split('>');
                     if (options.Length >= 2)
                     {
-                        directoryDict.Add(options[0], options[1]);
+                        directoryDict.Add(options[0].ToUpper(), options[1]);
                     }
                 }
-                if (!directoryDict.ContainsKey("*"))
-                {
-                    directoryDict.Add("*", DefaultDirectory);
-                }
             }
+            if (!directoryDict.ContainsKey("*"))
+            {
+                directoryDict.Add("*", DefaultDirectory);
+            }
+        }
+        public string GetDirectory(string extension)
+        {
             if (extension == null)
+            {
+                return DefaultDirectory;
+            }
+            if (directoryDict == null)
             {
                 return DefaultDirectory;
             }
@@ -599,9 +613,9 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
-        private void FileTaskHandler(object sender, string file)
+        private void FileTaskHandler(object sender, TaskManager.FileTaskEventArgs e)
         {
-            SendFile(file);
+            SendFile(e.File);
         }
 
         private void StartTask()

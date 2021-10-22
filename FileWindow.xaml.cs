@@ -41,19 +41,19 @@ namespace ComTransfer
         }
         private void FileTree_Expanded(object sender, RoutedEventArgs e)
         {
-            if (Border_Loading.Visibility == Visibility.Visible)
-            {
-                return;
-            }
-            Border_Loading.Visibility = Visibility.Visible;
             TreeViewItem item = sender as TreeViewItem;
-            MainWindow window = Owner as MainWindow;
             FileNode node = item.DataContext as FileNode;
             if (node == null || node.IsFile)
             {
                 e.Handled = true;
                 return;
             }
+            if (Border_Loading.Visibility == Visibility.Visible)
+            {
+                return;
+            }
+            Border_Loading.Visibility = Visibility.Visible;
+            MainWindow window = Owner as MainWindow;
             string root = node.FullName;
             window.LastCommand = null;
             window.SubmitCommand("requestfile", root);
@@ -82,11 +82,11 @@ namespace ComTransfer
                     }
                 }
 
-                Application.Current.Dispatcher.Invoke(() =>
+                Application.Current.Dispatcher.Invoke((Action)(() =>
                 {
                     ((FileNode)item.DataContext).SetFileList(list);
                     Border_Loading.Visibility = Visibility.Collapsed;
-                });
+                }));
             });
         }
 
