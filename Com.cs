@@ -148,9 +148,12 @@ namespace ComTransfer
 
         private const string DLL_NAME = "PCOMM.dll";
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void pCallback(int port);
-        public delegate int xCallBack(long xmitlen, int buflen, byte[] buf, long flen);
-        public delegate int rCallBack(long recvlen, int buflen, byte[] buf, long flen);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int xCallBack(long xmitlen, int buflen, [In, MarshalAs(UnmanagedType.LPArray)] byte[] buf, long flen);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int rCallBack(long recvlen, int buflen, [In, MarshalAs(UnmanagedType.LPArray)] byte[] buf, long flen);
 
         [DllImport(DLL_NAME)]
         public static extern int sio_ioctl(int port, int baud, int mode);
@@ -257,7 +260,7 @@ namespace ComTransfer
         [DllImport(DLL_NAME)]
         public static extern int sio_FtYmodemRx(int port, ref IntPtr ffname, int fno, rCallBack cb, int key);
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int sio_FtZmodemTx([In] int port, [In] string fname, [In, MarshalAs(UnmanagedType.FunctionPtr)] xCallBack cb, [In] int key);
+        public static extern int sio_FtZmodemTx([In] int port, [In, MarshalAs(UnmanagedType.LPArray)] byte[] fname, [In, MarshalAs(UnmanagedType.FunctionPtr)] xCallBack cb, [In] int key);
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern int sio_FtZmodemRx([In] int port, [In, Out] ref IntPtr ffname, [In] int fno, [In, MarshalAs(UnmanagedType.FunctionPtr)] rCallBack cb, [In] int key);
         [DllImport(DLL_NAME)]

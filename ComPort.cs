@@ -561,7 +561,7 @@ namespace ComTransfer
                                 try
                                 {
                                     PCOMM.sio_flush(PortID, 2);
-                                    result = PCOMM.sio_FtZmodemTx(PortID, filename, xCallBack, FileKey);
+                                    result = PCOMM.sio_FtZmodemTx(PortID, Encoding.Default.GetBytes(filename), xCallBack, FileKey);
 
                                     if (result < 0)
                                     {
