@@ -255,14 +255,14 @@ namespace ComTransfer
         [DllImport(DLL_NAME)]
         public static extern int sio_FtYmodemTx(int port, string fname, xCallBack cb, int key);
         [DllImport(DLL_NAME)]
-        public static extern int sio_FtYmodemRx(int port, ref string ffname, int fno, rCallBack cb, int key);
+        public static extern int sio_FtYmodemRx(int port, ref IntPtr ffname, int fno, rCallBack cb, int key);
         [DllImport(DLL_NAME)]
         public static extern int sio_FtZmodemTx(int port, string fname, xCallBack cb, int key);
         [DllImport(DLL_NAME)]
-        public static extern int sio_FtZmodemRx(int port, ref string ffname, int fno, rCallBack cb, int key);
+        public static extern int sio_FtZmodemRx(int port, ref IntPtr ffname, int fno, rCallBack cb, int key);
         [DllImport(DLL_NAME)]
         public static extern int sio_FtKermitTx(int port, string fname, xCallBack cb, int key);
         [DllImport(DLL_NAME)]
-        public static extern int sio_FtKermitRx(int port, ref string ffname, int fno, rCallBack cb, int key);
+        public static extern int sio_FtKermitRx(int port, ref IntPtr ffname, int fno, rCallBack cb, int key);
     }
 }

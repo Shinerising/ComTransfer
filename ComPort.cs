@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Linq;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace ComTransfer
 {
@@ -330,13 +331,23 @@ namespace ComTransfer
                 {
                     if (IsStarted && !IsSending)
                     {
+                        byte[] buffer = new byte[260];
+                        GCHandle pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+                        IntPtr pointer = pinnedArray.AddrOfPinnedObject();
                         string filename = string.Empty;
                         int fno = 1;
                         int result = 0;
-                        IsReceiveWaiting = true;
                         try
                         {
-                            result = PCOMM.sio_FtZmodemRx(PortID, ref filename, fno, rCallBack, FileKey);
+                            result = PCOMM.sio_iqueue(PortID);
+                            if (result <= 0)
+                            {
+                                continue;
+                            }
+                            IsReceiveWaiting = true;
+                            result = PCOMM.sio_FtZmodemRx(PortID, ref pointer, fno, rCallBack, FileKey);
+                            filename = Encoding.Default.GetString(buffer).TrimEnd('\0');
+                            pinnedArray.Free();
                             if (!IsStarted)
                             {
                                 continue;
@@ -490,6 +501,11 @@ namespace ComTransfer
                                 if (!fileInfo.Exists)
                                 {
                                     AddLog("文件发送", "文件不存在", shortname);
+                                    filename = null;
+                                }
+                                if (fileInfo.Length >= 1024 * 1024 * 20)
+                                {
+                                    AddLog("文件发送", "文件体积超过限制", shortname);
                                     filename = null;
                                 }
                                 else if(fileInfo.Extension.ToUpper() != ".APPCOMMAND")
