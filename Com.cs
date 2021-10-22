@@ -256,10 +256,10 @@ namespace ComTransfer
         public static extern int sio_FtYmodemTx(int port, string fname, xCallBack cb, int key);
         [DllImport(DLL_NAME)]
         public static extern int sio_FtYmodemRx(int port, ref IntPtr ffname, int fno, rCallBack cb, int key);
-        [DllImport(DLL_NAME)]
-        public static extern int sio_FtZmodemTx(int port, string fname, xCallBack cb, int key);
-        [DllImport(DLL_NAME)]
-        public static extern int sio_FtZmodemRx(int port, ref IntPtr ffname, int fno, rCallBack cb, int key);
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sio_FtZmodemTx([In] int port, [In] string fname, [In, MarshalAs(UnmanagedType.FunctionPtr)] xCallBack cb, [In] int key);
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sio_FtZmodemRx([In] int port, [In, Out] ref IntPtr ffname, [In] int fno, [In, MarshalAs(UnmanagedType.FunctionPtr)] rCallBack cb, [In] int key);
         [DllImport(DLL_NAME)]
         public static extern int sio_FtKermitTx(int port, string fname, xCallBack cb, int key);
         [DllImport(DLL_NAME)]

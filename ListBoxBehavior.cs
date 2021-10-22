@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -108,11 +109,37 @@ namespace ComTransfer
                 {
                     if (scrollViewer == null)
                     {
-                        Border border = (Border)VisualTreeHelper.GetChild(listBox, 0);
-                        scrollViewer = (ScrollViewer)VisualTreeHelper.GetChild(border, 0);
+                        scrollViewer = GetDescendantByType(listBox, typeof(ScrollViewer)) as ScrollViewer;
                     }
                     scrollViewer?.ScrollToBottom();
                 }
+            }
+
+            private static Visual GetDescendantByType(Visual element, Type type)
+            {
+                if (element == null)
+                {
+                    return null;
+                }
+                if (element.GetType() == type)
+                {
+                    return element;
+                }
+                Visual foundElement = null;
+                if (element is FrameworkElement)
+                {
+                    (element as FrameworkElement).ApplyTemplate();
+                }
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
+                {
+                    Visual visual = VisualTreeHelper.GetChild(element, i) as Visual;
+                    foundElement = GetDescendantByType(visual, type);
+                    if (foundElement != null)
+                    {
+                        break;
+                    }
+                }
+                return foundElement;
             }
         }
     }

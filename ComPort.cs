@@ -298,7 +298,7 @@ namespace ComTransfer
             }
 
             cancellation = new CancellationTokenSource();
-            receiveTask = Task.Factory.StartNew(() =>
+            receiveTask = new Task(() =>
             {
                 PCOMM.rCallBack rCallBack = new PCOMM.rCallBack((long recvlen, int buflen, byte[] buf, long flen) =>
                 {
@@ -355,30 +355,29 @@ namespace ComTransfer
                         try
                         {
                             result = PCOMM.sio_iqueue(PortID);
-                            if (result <= 0)
+                            if (result > 0)
                             {
-                                continue;
-                            }
-                            IsReceiveWaiting = true;
-                            result = PCOMM.sio_FtZmodemRx(PortID, ref pointer, fno, rCallBack, FileKey);
-                            filename = Encoding.Default.GetString(buffer).TrimEnd('\0');
-                            if (!IsStarted)
-                            {
-                                continue;
-                            }
-                            if (IsSending)
-                            {
-                                continue;
-                            }
-                            if (result < 0)
-                            {
-                                string message = PCOMM.GetTransferErrorMessage(result);
-                                AddLog("文件接收", "文件接收失败：" + message, filename);
-                            }
-                            else
-                            {
-                                ReceiveFileList.Enqueue(filename);
-                                AddLog("文件接收", "正在处理文件", filename);
+                                IsReceiveWaiting = true;
+                                result = PCOMM.sio_FtZmodemRx(PortID, ref pointer, fno, rCallBack, FileKey);
+                                filename = Encoding.Default.GetString(buffer).TrimEnd('\0');
+                                if (!IsStarted)
+                                {
+                                    continue;
+                                }
+                                if (IsSending)
+                                {
+                                    continue;
+                                }
+                                if (result < 0)
+                                {
+                                    string message = PCOMM.GetTransferErrorMessage(result);
+                                    AddLog("文件接收", "文件接收失败：" + message, filename);
+                                }
+                                else
+                                {
+                                    ReceiveFileList.Enqueue(filename);
+                                    AddLog("文件接收", "正在处理文件", filename);
+                                }
                             }
                         }
                         catch (Exception e)
@@ -400,8 +399,8 @@ namespace ComTransfer
                 }
 
                 pinnedArray.Free();
-            }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-            fileTask = Task.Factory.StartNew(() =>
+            }, cancellation.Token, TaskCreationOptions.LongRunning);
+            fileTask = new Task(() =>
             {
                 while (!cancellation.IsCancellationRequested)
                 {
@@ -472,8 +471,8 @@ namespace ComTransfer
 
                     Thread.Sleep(50);
                 }
-            }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-            sendTask = Task.Factory.StartNew(() =>
+            }, cancellation.Token, TaskCreationOptions.LongRunning);
+            sendTask = new Task(() =>
             {
                 PCOMM.xCallBack xCallBack = new PCOMM.xCallBack((long xmitlen, int buflen, byte[] buf, long flen) =>
                 {
@@ -601,8 +600,8 @@ namespace ComTransfer
 
                     Thread.Sleep(50);
                 }
-            }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-            statusTask = Task.Factory.StartNew(() =>
+            }, cancellation.Token, TaskCreationOptions.LongRunning);
+            statusTask = new Task(() =>
             {
                 while (!cancellation.IsCancellationRequested)
                 {
@@ -612,7 +611,7 @@ namespace ComTransfer
 
                     Thread.Sleep(500);
                 }
-            }, cancellation.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            }, cancellation.Token, TaskCreationOptions.LongRunning);
         }
 
         private void FileTaskHandler(object sender, TaskManager.FileTaskEventArgs e)
