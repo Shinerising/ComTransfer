@@ -300,47 +300,6 @@ namespace ComTransfer
             cancellation = new CancellationTokenSource();
             receiveTask = new Task(() =>
             {
-                PCOMM.rCallBack rCallBack = new PCOMM.rCallBack((long recvlen, int buflen, byte[] buf, long flen) =>
-                {
-                    if (IsSending)
-                    {
-                        return -1;
-                    }
-
-                    if (IsStarted)
-                    {
-                        if (ReceiveCount == 0 && recvlen != 0)
-                        {
-                            AddLog("文件接收", "开始接收文件");
-                        }
-                        if (recvlen != 0)
-                        {
-                            IsReceiving = true;
-                        }
-                        else
-                        {
-                            IsReceiving = false;
-                        }
-
-                        ReceiveCount = recvlen;
-                        ReceiveMax = flen;
-
-                        Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent, ReceiveTimeText });
-
-                        return 0;
-                    }
-                    else
-                    {
-                        ReceiveCount = 0;
-                        ReceiveMax = 0;
-
-                        Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent, ReceiveTimeText });
-
-                        return -1;
-                    }
-                }
-                );
-
                 byte[] buffer = new byte[260];
                 GCHandle pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
                 IntPtr pointer = pinnedArray.AddrOfPinnedObject();
@@ -358,7 +317,7 @@ namespace ComTransfer
                             if (result > 0)
                             {
                                 IsReceiveWaiting = true;
-                                result = PCOMM.sio_FtZmodemRx(PortID, ref pointer, fno, rCallBack, FileKey);
+                                result = PCOMM.sio_FtZmodemRx(PortID, ref pointer, fno, ReceiveCallback, FileKey);
                                 filename = Encoding.Default.GetString(buffer).TrimEnd('\0');
                                 if (!IsStarted)
                                 {
@@ -474,29 +433,6 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning);
             sendTask = new Task(() =>
             {
-                PCOMM.xCallBack xCallBack = new PCOMM.xCallBack((long xmitlen, int buflen, byte[] buf, long flen) =>
-                {
-                    if (IsStarted)
-                    {
-                        SendCount = xmitlen;
-                        SendMax = flen;
-
-                        Notify(new { SendCount, SendMax, SendProgress, SendPercent, SendTimeText });
-
-                        return 0;
-                    }
-                    else
-                    {
-                        SendCount = 0;
-                        SendMax = 0;
-
-                        Notify(new { SendCount, SendMax, SendProgress, SendPercent, SendTimeText });
-
-                        return -1;
-                    }
-                }
-                );
-
                 while (!cancellation.IsCancellationRequested)
                 {
                     if (IsStarted)
@@ -561,7 +497,7 @@ namespace ComTransfer
                                 try
                                 {
                                     PCOMM.sio_flush(PortID, 2);
-                                    result = PCOMM.sio_FtZmodemTx(PortID, Encoding.Default.GetBytes(filename), xCallBack, FileKey);
+                                    result = PCOMM.sio_FtZmodemTx(PortID, Encoding.Default.GetBytes(filename), SendCallback, FileKey);
 
                                     if (result < 0)
                                     {
@@ -612,6 +548,68 @@ namespace ComTransfer
                     Thread.Sleep(500);
                 }
             }, cancellation.Token, TaskCreationOptions.LongRunning);
+        }
+
+        private int ReceiveCallback([In] long recvlen, [In] int buflen, [In, MarshalAs(UnmanagedType.LPArray)] byte[] buf, [In] long flen)
+        {
+            if (IsSending)
+            {
+                return -1;
+            }
+
+            if (IsStarted)
+            {
+                if (ReceiveCount == 0 && recvlen != 0)
+                {
+                    AddLog("文件接收", "开始接收文件");
+                }
+                if (recvlen != 0)
+                {
+                    IsReceiving = true;
+                }
+                else
+                {
+                    IsReceiving = false;
+                }
+
+                ReceiveCount = recvlen;
+                ReceiveMax = flen;
+
+                Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent, ReceiveTimeText });
+
+                return 0;
+            }
+            else
+            {
+                ReceiveCount = 0;
+                ReceiveMax = 0;
+
+                Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent, ReceiveTimeText });
+
+                return -1;
+            }
+        }
+
+        private int SendCallback([In] long xmitlen, [In] int buflen, [In, MarshalAs(UnmanagedType.LPArray)] byte[] buf, [In] long flen)
+        {
+            if (IsStarted)
+            {
+                SendCount = xmitlen;
+                SendMax = flen;
+
+                Notify(new { SendCount, SendMax, SendProgress, SendPercent, SendTimeText });
+
+                return 0;
+            }
+            else
+            {
+                SendCount = 0;
+                SendMax = 0;
+
+                Notify(new { SendCount, SendMax, SendProgress, SendPercent, SendTimeText });
+
+                return -1;
+            }
         }
 
         private void FileTaskHandler(object sender, TaskManager.FileTaskEventArgs e)
