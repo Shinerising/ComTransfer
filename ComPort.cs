@@ -317,7 +317,7 @@ namespace ComTransfer
                             if (result > 0)
                             {
                                 IsReceiveWaiting = true;
-                                result = PCOMM.sio_FtZmodemRx(PortID, ref pointer, fno, ReceiveCallback, FileKey);
+                                result = PCOMM.sio_FtZmodemRx(PortID, ref pointer, fno, Marshal.GetFunctionPointerForDelegate(new PCOMM.rCallBack(ReceiveCallback)), FileKey);
                                 filename = Encoding.Default.GetString(buffer).TrimEnd('\0');
                                 if (!IsStarted)
                                 {
@@ -433,6 +433,10 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning);
             sendTask = new Task(() =>
             {
+                byte[] buffer = new byte[1024];
+                GCHandle pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+                IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+
                 while (!cancellation.IsCancellationRequested)
                 {
                     if (IsStarted)
@@ -497,7 +501,10 @@ namespace ComTransfer
                                 try
                                 {
                                     PCOMM.sio_flush(PortID, 2);
-                                    result = PCOMM.sio_FtZmodemTx(PortID, Encoding.Default.GetBytes(filename), SendCallback, FileKey);
+                                    Array.Clear(buffer, 0, buffer.Length);
+                                    byte[] nameBuffer = Encoding.Default.GetBytes(filename);
+                                    Buffer.BlockCopy(nameBuffer, 0, buffer, 0, nameBuffer.Length);
+                                    result = PCOMM.sio_FtZmodemTx(PortID, pointer, Marshal.GetFunctionPointerForDelegate(new PCOMM.xCallBack(SendCallback)), FileKey);
 
                                     if (result < 0)
                                     {
@@ -536,6 +543,8 @@ namespace ComTransfer
 
                     Thread.Sleep(50);
                 }
+
+                pinnedArray.Free();
             }, cancellation.Token, TaskCreationOptions.LongRunning);
             statusTask = new Task(() =>
             {
@@ -550,7 +559,7 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning);
         }
 
-        private int ReceiveCallback([In] long recvlen, [In] int buflen, [In, MarshalAs(UnmanagedType.LPArray)] byte[] buf, [In] long flen)
+        private int ReceiveCallback([In] long recvlen, [In] int buflen, [In] IntPtr buf, [In] long flen)
         {
             if (IsSending)
             {
@@ -590,7 +599,7 @@ namespace ComTransfer
             }
         }
 
-        private int SendCallback([In] long xmitlen, [In] int buflen, [In, MarshalAs(UnmanagedType.LPArray)] byte[] buf, [In] long flen)
+        private int SendCallback([In] long xmitlen, [In] int buflen, [In] IntPtr buf, [In] long flen)
         {
             if (IsStarted)
             {
