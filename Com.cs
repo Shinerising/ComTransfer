@@ -152,9 +152,9 @@ namespace ComTransfer
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void pCallback([In] int port);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int xCallBack([In] long xmitlen, [In] int buflen, [In] IntPtr buf, [In] long flen);
+        public delegate sbyte xCallBack([In] int xmitlen, [In] int buflen, [In] IntPtr buf, [In] int flen);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int rCallBack([In] long recvlen, [In] int buflen, [In] IntPtr buf, [In] long flen);
+        public delegate sbyte rCallBack([In] int recvlen, [In] int buflen, [In] IntPtr buf, [In] int flen);
 
         [DllImport(DLL_NAME)]
         public static extern int sio_ioctl(int port, int baud, int mode);

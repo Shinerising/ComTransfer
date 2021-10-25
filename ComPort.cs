@@ -559,7 +559,7 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning);
         }
 
-        private int ReceiveCallback([In] long recvlen, [In] int buflen, [In] IntPtr buf, [In] long flen)
+        private sbyte ReceiveCallback([In] int recvlen, [In] int buflen, [In] IntPtr buf, [In] int flen)
         {
             if (IsSending)
             {
@@ -599,7 +599,7 @@ namespace ComTransfer
             }
         }
 
-        private int SendCallback([In] long xmitlen, [In] int buflen, [In] IntPtr buf, [In] long flen)
+        private sbyte SendCallback([In] int xmitlen, [In] int buflen, [In] IntPtr buf, [In] int flen)
         {
             if (IsStarted)
             {
