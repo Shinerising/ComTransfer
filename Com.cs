@@ -149,12 +149,9 @@ namespace ComTransfer
 
         private const string DLL_NAME = "PCOMM.dll";
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void pCallback([In] int port);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate sbyte xCallBack([In] int xmitlen, [In] int buflen, [In] IntPtr buf, [In] int flen);
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate sbyte rCallBack([In] int recvlen, [In] int buflen, [In] IntPtr buf, [In] int flen);
+        public delegate void pCallback(int port);
+        public delegate int xCallBack(int xmitlen, int buflen, byte[] buf, int flen);
+        public delegate int rCallBack(int recvlen, int buflen, byte[] buf, int flen);
 
         [DllImport(DLL_NAME)]
         public static extern int sio_ioctl(int port, int baud, int mode);
@@ -260,12 +257,10 @@ namespace ComTransfer
         public static extern int sio_FtYmodemTx(int port, string fname, xCallBack cb, int key);
         [DllImport(DLL_NAME)]
         public static extern int sio_FtYmodemRx(int port, ref IntPtr ffname, int fno, rCallBack cb, int key);
-        [SuppressUnmanagedCodeSecurity]
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int sio_FtZmodemTx([In] int port, [In] IntPtr fname, [In] IntPtr cb, [In] int key);
-        [SuppressUnmanagedCodeSecurity]
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int sio_FtZmodemRx([In] int port, [In, Out] ref IntPtr ffname, [In] int fno, [In] IntPtr cb, [In] int key);
+        [DllImport(DLL_NAME)]
+        public static extern int sio_FtZmodemTx(int port, string fname, IntPtr cb, int key);
+        [DllImport(DLL_NAME)]
+        public static extern int sio_FtZmodemRx(int port, ref IntPtr ffname, int fno, IntPtr cb, int key);
         [DllImport(DLL_NAME)]
         public static extern int sio_FtKermitTx(int port, string fname, xCallBack cb, int key);
         [DllImport(DLL_NAME)]

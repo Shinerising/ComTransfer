@@ -99,6 +99,14 @@ namespace ComTransfer
                 port.SelectRemotePath(window.Path);
             }
         }
+        private void Button_ClearRecord_Click(object sender, RoutedEventArgs e)
+        {
+            port.ClearRecord();
+        }
+        private void Button_ClearLog_Click(object sender, RoutedEventArgs e)
+        {
+            port.ClearLog();
+        }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {

@@ -14,6 +14,7 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
         <Style x:Key="Label_Status" TargetType="Label">
+            <Setter Property="Height" Value="24"/>
             <Setter Property="Padding" Value="4,2"/>
             <Setter Property="Margin" Value="0,0,4,0"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -21,11 +22,12 @@
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#334466"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Style.Triggers>
                 <Trigger Property="IsEnabled" Value="True">
                     <Setter Property="BorderBrush" Value="#55AA88"/>
                     <Setter Property="Background" Value="#55DD88"/>
-                    <Setter Property="Foreground" Value="#FFFFEE"/>
+                    <Setter Property="Foreground" Value="#FFFFFF"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -45,7 +47,7 @@
         <Style TargetType="Button">
             <Setter Property="Width" Value="24"/>
             <Setter Property="Height" Value="24"/>
-            <Setter Property="Background" Value="#EFEFFF"/>
+            <Setter Property="Background" Value="#F8F8F8"/>
         </Style>
         <Style TargetType="TextBox">
             <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -64,9 +66,9 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="64"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,2">
             <Grid.ColumnDefinitions>
@@ -119,7 +121,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="程序设置"/>
-            <ItemsControl Grid.Column="1" Margin="4,0" ItemsSource="{Binding PortOption}">
+            <ItemsControl Grid.Column="1" Margin="4,0" VerticalAlignment="Stretch" ItemsSource="{Binding PortOption}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal"/>
@@ -192,13 +194,27 @@
             <ListBox ItemsSource="{Binding TaskList, Source={x:Static local:TaskManager.Instance}}"/>
         </Grid>
         <Grid Grid.Row="6" Margin="0,2">
-            <Label Content="工作日志"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="工作日志"/>
+            <Button Grid.Column="1" Margin="4,0,0,0" Click="Button_ClearLog_Click" ToolTip="清除工作日志">
+                <Path Data="M12 3L12 1L1 1L1 15L9 15M3 4L10 4M15 2L11 9M4 10L9 7L14 10L14 15Z"/>
+            </Button>
         </Grid>
         <Grid Grid.Row="7" Margin="0,2">
             <ListBox local:ListBoxBehavior.ScrollOnNewItem="True" ItemsSource="{Binding LogList}"/>
         </Grid>
         <Grid Grid.Row="8" Margin="0,2">
-            <Label Content="传输记录"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="传输记录"/>
+            <Button Grid.Column="1" Margin="4,0,0,0" Click="Button_ClearRecord_Click" ToolTip="清除传输记录">
+                <Path Data="M12 3L12 1L1 1L1 15L9 15M3 4L10 4M15 2L11 9M4 10L9 7L14 10L14 15Z"/>
+            </Button>
         </Grid>
         <Grid Grid.Row="9" Margin="0,2,0,0">
             <Grid.RowDefinitions>

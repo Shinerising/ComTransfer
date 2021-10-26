@@ -18,7 +18,7 @@ namespace ComTransfer
 
             DataContext = this;
 
-            TaskList = TaskManager.Instance.TaskList;
+            TaskList = new ObservableCollection<TaskNode>(TaskManager.Instance.TaskList.Select(item => item.Clone()));
 
             InitializeComponent();
         }

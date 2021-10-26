@@ -38,7 +38,7 @@
         <Style TargetType="Button">
             <Setter Property="Width" Value="24"/>
             <Setter Property="Height" Value="24"/>
-            <Setter Property="Background" Value="#EFEFFF"/>
+            <Setter Property="Background" Value="#F8F8F8"/>
         </Style>
     </Window.Resources>
     <Grid>
@@ -65,7 +65,7 @@
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left">
                 <Border Grid.Column="0">
                     <Button Margin="2" ToolTip="添加计划任务" Click="Button_Add_Click">
-                        <Path Data="M1 8L15 8M8 1L8 15"/>
+                        <Path Data="M1 2L15 2L15 6L1 6ZM1 10L7 10L7 14L1 14ZM9 12L15 12M12 9L12 15"/>
                     </Button>
                 </Border>
                 <Border Grid.Column="1">
@@ -79,7 +79,7 @@
                         </Style>
                     </Border.Style>
                     <Button Margin="2" ToolTip="删除计划任务" Click="Button_Delete_Click">
-                        <Path Data="M1 8L15 8"/>
+                        <Path Data="M1 2L15 2L15 6L1 6ZM1 10L7 10L7 14L1 14ZM10 10L15 15M15 10L10 15"/>
                     </Button>
                 </Border>
             </StackPanel>

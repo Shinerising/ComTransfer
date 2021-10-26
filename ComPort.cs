@@ -11,6 +11,7 @@ using System.Windows;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 
 namespace ComTransfer
 {
@@ -39,6 +40,7 @@ namespace ComTransfer
         public string SaveDirectory = DefaultDirectory;
         public string SelectedFilePath { get; set; }
         public string PullFilePath { get; set; }
+        public const string WorkingDirectory = "files";
 
         public bool IsOpen { get; set; }
 
@@ -173,9 +175,21 @@ namespace ComTransfer
 
             InitialDirectory();
 
+            InitialWorkingDirectory();
+
             Notify(new { PortInfo, PortOption });
 
             return true;
+        }
+        private void InitialWorkingDirectory()
+        {
+            string workingfolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, WorkingDirectory);
+            if (!Directory.Exists(workingfolder))
+            {
+                Directory.CreateDirectory(workingfolder);
+            }
+            File.SetAttributes(workingfolder, FileAttributes.Hidden);
+            Directory.SetCurrentDirectory(workingfolder);
         }
         private void InitialDirectory()
         {
@@ -301,8 +315,12 @@ namespace ComTransfer
             receiveTask = new Task(() =>
             {
                 byte[] buffer = new byte[260];
-                GCHandle pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+                GCHandle gc_fn = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+                IntPtr fnp = gc_fn.AddrOfPinnedObject();
+
+                rCallBack cb = new rCallBack(ReceiveCallback);
+                GCHandle gc = GCHandle.Alloc(cb);
+                IntPtr cbp = Marshal.GetFunctionPointerForDelegate(cb);
 
                 while (!cancellation.IsCancellationRequested)
                 {
@@ -316,8 +334,9 @@ namespace ComTransfer
                             result = PCOMM.sio_iqueue(PortID);
                             if (result > 0)
                             {
+                                Array.Clear(buffer, 0, buffer.Length);
                                 IsReceiveWaiting = true;
-                                result = PCOMM.sio_FtZmodemRx(PortID, ref pointer, fno, Marshal.GetFunctionPointerForDelegate(new PCOMM.rCallBack(ReceiveCallback)), FileKey);
+                                result = PCOMM.sio_FtZmodemRx(PortID, ref fnp, fno, cbp, FileKey);
                                 filename = Encoding.Default.GetString(buffer).TrimEnd('\0');
                                 if (!IsStarted)
                                 {
@@ -357,7 +376,8 @@ namespace ComTransfer
                     Thread.Sleep(50);
                 }
 
-                pinnedArray.Free();
+                gc_fn.Free();
+                gc.Free();
             }, cancellation.Token, TaskCreationOptions.LongRunning);
             fileTask = new Task(() =>
             {
@@ -433,9 +453,9 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning);
             sendTask = new Task(() =>
             {
-                byte[] buffer = new byte[1024];
-                GCHandle pinnedArray = GCHandle.Alloc(buffer, GCHandleType.Pinned);
-                IntPtr pointer = pinnedArray.AddrOfPinnedObject();
+                xCallBack cb = new xCallBack(SendCallback);
+                GCHandle gc = GCHandle.Alloc(cb);
+                IntPtr cbp = Marshal.GetFunctionPointerForDelegate(cb);
 
                 while (!cancellation.IsCancellationRequested)
                 {
@@ -501,10 +521,7 @@ namespace ComTransfer
                                 try
                                 {
                                     PCOMM.sio_flush(PortID, 2);
-                                    Array.Clear(buffer, 0, buffer.Length);
-                                    byte[] nameBuffer = Encoding.Default.GetBytes(filename);
-                                    Buffer.BlockCopy(nameBuffer, 0, buffer, 0, nameBuffer.Length);
-                                    result = PCOMM.sio_FtZmodemTx(PortID, pointer, Marshal.GetFunctionPointerForDelegate(new PCOMM.xCallBack(SendCallback)), FileKey);
+                                    result = PCOMM.sio_FtZmodemTx(PortID, filename, cbp, FileKey);
 
                                     if (result < 0)
                                     {
@@ -544,7 +561,7 @@ namespace ComTransfer
                     Thread.Sleep(50);
                 }
 
-                pinnedArray.Free();
+                gc.Free();
             }, cancellation.Token, TaskCreationOptions.LongRunning);
             statusTask = new Task(() =>
             {
@@ -559,7 +576,11 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning);
         }
 
-        private sbyte ReceiveCallback([In] int recvlen, [In] int buflen, [In] IntPtr buf, [In] int flen)
+
+        public delegate int xCallBack(int xmitlen, int buflen, byte[] buf, int flen);
+        public delegate int rCallBack(int recvlen, int buflen, byte[] buf, int flen);
+
+        private int ReceiveCallback(int recvlen, int buflen, byte[] buf, int flen)
         {
             if (IsSending)
             {
@@ -599,7 +620,7 @@ namespace ComTransfer
             }
         }
 
-        private sbyte SendCallback([In] int xmitlen, [In] int buflen, [In] IntPtr buf, [In] int flen)
+        private int SendCallback(int xmitlen, int buflen, byte[] buf, int flen)
         {
             if (IsStarted)
             {
@@ -843,6 +864,14 @@ namespace ComTransfer
                     RecordList.RemoveAt(0);
                 }
             }));
+        }
+        public void ClearLog()
+        {
+            LogList.Clear();
+        }
+        public void ClearRecord()
+        {
+            RecordList.Clear();
         }
     }
 }

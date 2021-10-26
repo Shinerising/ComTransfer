@@ -36,6 +36,10 @@ namespace ComTransfer
         {
             return string.Format("每天{0}发送{1}文件夹中的{2}文件，修改时间区间为{3:f1}小时至{4:f1}小时", TriggerTimeText, Folder, Extension, FileTime_Head / 60d, FileTime_Tail / 60d);
         }
+        public TaskNode Clone()
+        {
+            return MemberwiseClone() as TaskNode;
+        }
     }
     public class TaskManager
     {
