@@ -1,0 +1,86 @@
+
+Product:    PComm Lite 2000
+Version:    1.6
+Date:       04/19/2012
+Company:    Moxa Inc.
+
+Support Platform:
+-----------------
+Windows 2000
+Windows XP (x86/x64)
+Windows Server 2003 (x86/x64)
+Windows Vista (x86/x64)
+Windows Server 2008 (x86/x64)
+Windows Server 2008 R2 
+Windows 7 (x86/x64)
+
+Supported Product:
+------------------------
+ - Terminal Emulator
+   Support all serial products include non-Moxa product
+
+ - Diagnostic Utility
+   Multiport Serial Board
+   (Only support Moxa products)
+
+ - Monitor Utility
+   Multiport Serial Board
+   (Only support Moxa products)
+
+ - Performance Analyzer
+   Multiport Serial Board, UPort Series, NPort Series
+   (Only support Moxa products)	
+
+ - PComm Library
+   Support all serial products include non-Moxa product
+
+Release Note:
+--------------
+Ver 1.6 Build 12041917
+1.  New: Add byte transmit / receive counter in PComm Terminal.
+2.  New: PComm Terminal support paste clipboard content to terminal.
+3.  Improve: Allow different version of PComm Lite 2000 to be installed on the
+             same PC.
+4.  Improve: Allow Performance Analyzer to store the previous configurations of
+             COM port list.
+5.  Improve: Allow PComm Terminal user to set history depth in ANSI and VT100
+             mode.
+6.  Bugfix: PComm Terminal can't locate system file ws2_32.dll in Windows 2000
+            as well as Windows XP.
+7.  Bugfix: PComm Terminal can't stop to send pattern independently and all
+            sending will be stopped.
+
+Ver 1.5
+1. New: support Windows 2008/2008 R2 (x86/x64)
+2. New: support HEX code display for dumb mode
+3. New: support linear baud rate configuration
+4. New: support send pattern for multiple COM ports
+5. New: support data file pattern
+6. New: support interval time between sending two pattern
+7. New: support network communication: TCP Server/Client, UDP
+8. New: support auto line wrap
+9. New: support customize terminal size 
+10. New: support DTR/DSR flow control configuration
+11. New: support Performance Analyzer
+12. Improve: support VC project for PComm Example
+13. Improve: improve read method using RX_CHAR event
+14. Improve: support open multiple COM ports
+15. Improve: record customize path for capture file
+
+Ver 1.4
+1. New: support Windows Vista/7.
+2. Improve: VT100 add "DEL" key support.
+3. Improve: modify all on-line help to Html format.
+4. Improve: PComm Lite support up to COM1024.
+5. Bugfix: update PComm.dll Fix ASCII tx will hang VB program if tx is hold by
+           CTS flow control.
+
+Ver1.3
+1. New: utilities support Moxa MSB x64 driver.
+2. New: PComm Library supports Windows x64 Edition (AMD64, EM64T).
+        For cross development, x86 & x64 library will be all installed.
+3. Improve: PComm Terminal display performance.
+4. Bugfix: PComm Terminal status bar display problem.
+5. Bugfix: PComm Terminal display problem with Moxa UC series/
+           EtherDevice/W2004 console.
+

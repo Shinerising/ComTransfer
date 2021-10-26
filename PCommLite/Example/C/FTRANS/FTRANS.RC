@@ -1,0 +1,131 @@
+/*
+	File transfer example resource file.
+
+*/
+
+#include <windows.h>
+#include "dlgs.h"
+#include "resource.h"
+
+#include "pdlg.rc"
+
+
+IDM_FTRANS MENU DISCARDABLE
+BEGIN
+    POPUP "&Port"
+    BEGIN
+	MENUITEM "&Open",                       IDM_PORT_OPEN
+	MENUITEM "&Close",                      IDM_PORT_CLOSE
+	MENUITEM SEPARATOR
+	MENUITEM "&Exit",                       IDM_PORT_EXIT
+    END
+    MENUITEM "&Setting...",                 IDM_PORT_SETTING
+    MENUITEM "File Transfer...",            IDM_FILE_TRANS
+    POPUP "&Help"
+    BEGIN
+	MENUITEM "&About",                       IDM_HELP_ABOUT
+    END
+END
+
+IDD_FILETRANS DIALOG DISCARDABLE  0, 0, 175, 146
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "File Transfer"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Protocol",IDC_STATIC1,6,10,94,125
+    CONTROL         "XModem-1KCRC",IDC_FT_XMDM1KCRC,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,15,25,75,10
+    CONTROL         "XModem-CheckSum",IDC_FT_XMDMCHK,"Button",
+                    BS_AUTORADIOBUTTON,15,40,80,10
+    CONTROL         "XModem-CRC",IDC_FT_XMDMCRC,"Button",BS_AUTORADIOBUTTON,
+                    15,55,75,10
+    CONTROL         "ZModem",IDC_FT_ZMDM,"Button",BS_AUTORADIOBUTTON,15,70,
+                    75,10
+    CONTROL         "YModem",IDC_FT_YMDM,"Button",BS_AUTORADIOBUTTON,15,85,
+                    75,10
+    CONTROL         "Kermit",IDC_FT_KERMIT,"Button",BS_AUTORADIOBUTTON,15,
+                    100,75,10
+    CONTROL         "ASCII",IDC_FT_ASCII,"Button",BS_AUTORADIOBUTTON,15,115,
+                    63,10
+    GROUPBOX        "Direction",IDC_STATIC2,110,10,55,50
+    CONTROL         "Transmit",IDC_FT_XMIT,"Button",BS_AUTORADIOBUTTON |
+                    WS_GROUP,115,25,45,10
+    CONTROL         "Receive",IDC_FT_RECV,"Button",BS_AUTORADIOBUTTON,115,40,
+                    43,10
+    DEFPUSHBUTTON   "OK",IDOK,120,90,40,14
+    PUSHBUTTON      "Cancel",IDCANCEL,120,115,40,14
+END
+
+
+IDD_STATUS DIALOG DISCARDABLE  0, 0, 257, 116
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "File Transfer "
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,185,85,50,14
+    RTEXT           "Port :",IDC_STATIC5,10,20,45,10
+    LTEXT           "",IDC_X_PORT,60,20,45,10,SS_SUNKEN
+    RTEXT           "Protocol :",IDC_STATIC6,125,20,45,10
+    LTEXT           "",IDC_X_PROTO,175,20,60,10,SS_SUNKEN
+    RTEXT           "File Name :",IDC_STATIC7,10,66,45,10
+    LTEXT           "",IDC_X_FNAME,60,66,175,10,SS_SUNKEN
+    RTEXT           "File Size :",IDC_STATIC8,10,39,45,10
+    LTEXT           "",IDC_X_FLEN,60,39,45,10,SS_SUNKEN
+    RTEXT           "Receive Length :",IDC_LEN_TEXT,115,39,55,10
+    LTEXT           "",IDC_X_LEN,175,39,60,10,SS_SUNKEN
+    GROUPBOX        "",IDC_STATIC9,7,5,243,100
+END
+
+FILEOPENORD DIALOG DISCARDABLE  109, 35, 165, 134
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Open"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "File &Name:",stc3,168,0,76,10
+    EDITTEXT        edt1,168,10,90,12,ES_AUTOHSCROLL | ES_OEMCONVERT
+    LISTBOX         lst1,168,26,90,68,LBS_SORT | LBS_OWNERDRAWFIXED | 
+                    LBS_HASSTRINGS | LBS_DISABLENOSCROLL | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "&Directories:",-1,7,6,92,9
+    LTEXT           "",stc1,7,18,92,9,SS_NOPREFIX
+    LISTBOX         lst2,7,32,92,68,LBS_SORT | LBS_OWNERDRAWFIXED | 
+                    LBS_HASSTRINGS | LBS_DISABLENOSCROLL | WS_VSCROLL | 
+                    WS_TABSTOP
+    LTEXT           "List Files of &Type:",stc2,168,98,90,9
+    COMBOBOX        cmb1,168,108,90,36,CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | 
+                    WS_BORDER | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dri&ves:",stc4,7,104,92,9
+    COMBOBOX        cmb2,7,114,92,68,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | 
+                    CBS_AUTOHSCROLL | CBS_SORT | CBS_HASSTRINGS | WS_BORDER | 
+                    WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,105,6,50,14,WS_GROUP
+    PUSHBUTTON      "Cancel",IDCANCEL,105,24,50,14,WS_GROUP
+    PUSHBUTTON      "&Help",psh15,105,46,50,14,WS_GROUP
+    CONTROL         "&Read Only",chx1,"Button",BS_AUTOCHECKBOX | WS_GROUP |
+		    WS_TABSTOP,105,68,52,10
+END
+
+
+STRINGTABLE DISCARDABLE
+BEGIN
+    IDS_XMDM1KCRC           "XModem-1KCRC"
+    IDS_XMDMCHK             "XModem-CheckSum"
+    IDS_XMDMCRC             "XModem-CRC"
+    IDS_ZMDM                "ZModem"
+    IDS_YMDM                "YModem"
+    IDS_KERMIT              "Kermit"
+    IDS_ASCII               "ASCII"
+    IDS_XMIT                "Transmit File"
+    IDS_RECV                "Receive File"
+    IDS_TRAN_OK             "Transmit file ok"
+    IDS_RECV_OK             "Receive file ok"
+    IDS_EBADPORT            "Port is not opened in advance"
+    IDS_TTIMEOUT            "Transmit timeout"
+    IDS_RTIMEOUT            "Receive timeout"
+    IDS_ABORT               "User abort"
+    IDS_FOPEN               "Can't open file"
+    IDS_CANABORT            "Remote side abort"
+    IDS_LACKBUF             "Using ZModem protocol,your COM port receive buffer size \nhave to be larger than 2K bytes\n"
+    IDS_BOARDNOTSUPPORT     "This board does not support this function"
+    IDS_FTERR               "File transfer error"
+END
