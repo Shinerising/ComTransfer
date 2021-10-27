@@ -77,8 +77,8 @@
             </StackPanel>
             <Grid Width="380">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <CheckBox Content="是否允许开机自动启动" Margin="4,2" Height="24" HorizontalAlignment="Center" VerticalContentAlignment="Center"/>
-                    <CheckBox Content="是否启动后立即开始工作" Margin="4,2" Height="24" HorizontalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <CheckBox Content="是否允许开机自动启动" IsChecked="{Binding IsAutoStart}" Margin="4,2" Height="24" HorizontalAlignment="Center" VerticalContentAlignment="Center"/>
+                    <CheckBox Content="是否启动后立即开始工作" IsChecked="{Binding IsAutoRun}" Margin="4,2" Height="24" HorizontalAlignment="Center" VerticalContentAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </WrapPanel>

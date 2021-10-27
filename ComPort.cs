@@ -43,6 +43,7 @@ namespace ComTransfer
         public const string WorkingDirectory = "files";
 
         public bool IsOpen { get; set; }
+        public bool IsOpening { get; set; }
 
         public long ReceiveCount { get; set; } = 0;
         public long ReceiveMax { get; set; } = 0;
@@ -230,13 +231,24 @@ namespace ComTransfer
             }
         }
 
-        public bool CheckOption()
+        public void DelayOpen(int delay)
         {
-            return true;
+            Task.Factory.StartNew(() =>
+            {
+                Thread.Sleep(delay);
+
+                OpenPort();
+            });
         }
+
 
         public bool OpenPort()
         {
+            if (IsOpening)
+            {
+                return false;
+            }
+            IsOpening = true;
             try
             {
                 InitialPort();
@@ -265,7 +277,8 @@ namespace ComTransfer
             }
 
             IsOpen = true;
-            Notify(new { IsOpen });
+            IsOpening = false;
+            Notify(new { IsOpen, IsOpening });
             StartTask();
             return true;
         }
@@ -276,6 +289,7 @@ namespace ComTransfer
             int result;
             if ((result = PCOMM.sio_close(PortID)) != PCOMM.SIO_OK)
             {
+                AddLog("程序故障", "串口通信关闭失败：" + PCOMM.GetErrorMessage(result));
                 return false;
             }
             IsOpen = false;

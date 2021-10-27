@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,6 +23,10 @@ namespace ComTransfer
     /// </summary>
     public partial class ConfigWindow : Window
     {
+        /// <summary>
+        /// 启动运行注册表位置
+        /// </summary>
+        private static readonly RegistryKey regPath = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
         public int PortID { get; set; } = 1;
         public int BaudRate { get; set; } = 9600;
         public int DataBits { get; set; } = 8;
@@ -31,6 +37,25 @@ namespace ComTransfer
         public bool IsDTR { get; set; } = true;
         public bool IsRTS { get; set; } = true;
         public string FolderConfig { get; set; } = "";
+        public bool IsAutoRun { get; set; }
+        public bool IsAutoStart
+        {
+            get
+            {
+                return regPath.GetValue(Process.GetCurrentProcess().ProcessName) != null;
+            }
+            set
+            {
+                if (value)
+                {
+                    regPath.SetValue(Process.GetCurrentProcess().ProcessName, Process.GetCurrentProcess().MainModule.FileName);
+                }
+                else
+                {
+                    regPath.DeleteValue(Process.GetCurrentProcess().ProcessName, false);
+                }
+            }
+        }
         public ConfigWindow(Window window)
         {
             Owner = window;
@@ -49,6 +74,8 @@ namespace ComTransfer
 
             FolderConfig = ConfigurationManager.AppSettings["directory"];
 
+            IsAutoRun = ConfigurationManager.AppSettings["autorun"].ToUpper() == "TRUE";
+
             InitializeComponent();
         }
 
@@ -60,44 +87,50 @@ namespace ComTransfer
         }
         public void SaveAllConfig()
         {
-            SaveConfig(PortID, "com");
-            SaveConfig(BaudRate, "baudrate");
-            SaveConfig(DataBits, "databits");
-            SaveConfig(StopBits, "stopbits");
-            SaveConfig(Parity, "parity");
-            SaveConfig(IsHW, "ishw");
-            SaveConfig(IsSW, "issw");
-            SaveConfig(IsDTR, "isdtr");
-            SaveConfig(IsRTS, "isrts");
-            SaveConfig(FolderConfig, "directory");
+            SaveConfig(new Dictionary<string, object>()
+            {
+                { "com", PortID },
+                { "baudrate", BaudRate },
+                { "databits", DataBits },
+                { "stopbits", StopBits },
+                { "parity", Parity },
+                { "ishw", IsHW },
+                { "issw", IsSW },
+                { "isdtr", IsDTR },
+                { "isrts", IsRTS },
+                { "directory", FolderConfig },
+                { "autorun", IsAutoRun },
+            });
         }
 
-        private void SaveConfig<T>(T param, string key)
+        private void SaveConfig(Dictionary<string, object> dict)
         {
             try
             {
-                if (param != null)
+                Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                foreach (var pair in dict)
                 {
-                    Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    if (configuration.AppSettings.Settings.AllKeys.Contains(key))
+                    object param = pair.Value;
+                    string key = pair.Key;
+                    if (param != null)
                     {
-                        configuration.AppSettings.Settings[key].Value = param.ToString();
+                        if (configuration.AppSettings.Settings.AllKeys.Contains(key))
+                        {
+                            configuration.AppSettings.Settings[key].Value = param.ToString();
+                        }
+                        else
+                        {
+
+                            configuration.AppSettings.Settings.Add(key, param.ToString());
+                        }
                     }
                     else
                     {
-
-                        configuration.AppSettings.Settings.Add(key, param.ToString());
+                        configuration.AppSettings.Settings.Remove(key);
                     }
-                    configuration.Save(ConfigurationSaveMode.Minimal, true);
-                    ConfigurationManager.RefreshSection("appSettings");
                 }
-                else
-                {
-                    Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                    configuration.AppSettings.Settings.Remove(key);
-                    configuration.Save(ConfigurationSaveMode.Minimal, true);
-                    ConfigurationManager.RefreshSection("appSettings");
-                }
+                configuration.Save(ConfigurationSaveMode.Minimal, true);
+                ConfigurationManager.RefreshSection("appSettings");
             }
             catch
             {

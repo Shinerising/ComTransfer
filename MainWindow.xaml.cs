@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -20,6 +21,16 @@ namespace ComTransfer
             DataContext = port;
 
             InitializeComponent();
+
+            CheckAutoRun();
+        }
+
+        private void CheckAutoRun()
+        {
+            if (ConfigurationManager.AppSettings["autorun"].ToUpper() == "TRUE")
+            {
+                port.DelayOpen(1000);
+            }
         }
 
         private void Button_Start_Click(object sender, RoutedEventArgs e)
