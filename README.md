@@ -8,7 +8,7 @@
 
 一款支持计算机之间通过串口执行文件发送、文件拉取、自动化文件备份等操作的轻量级软件。
 
-<img width=800 alt="ComTransfer" src="screenshot.png">
+![ComTransfer App](screenshot.png)
 
 ## 软件功能
 

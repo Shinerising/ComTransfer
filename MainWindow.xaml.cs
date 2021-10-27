@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
+using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using Microsoft.Win32;
+using System.Windows.Input;
 
 namespace ComTransfer
 {
@@ -127,6 +126,24 @@ namespace ComTransfer
             set
             {
                 port.LastCommand = value;
+            }
+        }
+        private void OpenHelpFile()
+        {
+            string helpFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "README.html");
+
+            using (Process process = new Process())
+            {
+                process.StartInfo = new ProcessStartInfo(helpFile);
+                process.Start();
+            }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.F1)
+            {
+                OpenHelpFile();
             }
         }
     }

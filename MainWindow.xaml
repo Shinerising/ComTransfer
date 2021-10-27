@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ComTransfer"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=local:ComPort}"
-        Title="自动化串口文件传输工具" Width="380" Height="560" MinWidth="280" MinHeight="360" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing" Icon="/app.ico">
+        Title="自动化串口文件传输工具" Width="380" Height="560" MinWidth="280" MinHeight="360" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing" KeyDown="Window_KeyDown" Icon="/app.ico">
     <Window.Resources>
         <Style TargetType="Label">
             <Setter Property="Padding" Value="2,4"/>
