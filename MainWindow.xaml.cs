@@ -143,10 +143,17 @@ namespace ComTransfer
         {
             string helpFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "README.html");
 
-            using (Process process = new Process())
+            try
             {
-                process.StartInfo = new ProcessStartInfo(helpFile);
-                process.Start();
+                using (Process process = new Process())
+                {
+                    process.StartInfo = new ProcessStartInfo(helpFile);
+                    process.Start();
+                }
+            }
+            catch
+            {
+
             }
         }
 

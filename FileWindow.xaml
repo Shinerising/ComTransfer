@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ComTransfer"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=local:FileWindow}"
-        Title="远端文件选择窗口" Width="320" Height="360" SizeToContent="Manual" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing">
+        Title="远端文件选择窗口" Width="320" Height="360" SizeToContent="Manual" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" MinWidth="240" MinHeight="240" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing">
     <Window.Resources>
         <Style TargetType="StackPanel">
             <Setter Property="Margin" Value="2"/>
@@ -21,7 +21,7 @@
             <Setter Property="SnapsToDevicePixels" Value="True"/>
             <Setter Property="Height" Value="Auto"/>
             <Setter Property="MinWidth" Value="28"/>
-            <Setter Property="Padding" Value="2,0"/>
+            <Setter Property="Padding" Value="2,4"/>
             <Setter Property="TextWrapping" Value="NoWrap"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
@@ -95,10 +95,12 @@
                     <Style TargetType="TreeViewItem">
                         <Setter Property="Header" Value="{Binding FileName}"/>
                         <Setter Property="ItemsSource" Value="{Binding FileList}"/>
-                        <EventSetter Event="Expanded" Handler="FileTree_Expanded"/>
-                        <EventSetter Event="Selected" Handler="FileTree_Selected"/>
                         <Setter Property="Padding" Value="4,2"/>
                         <Setter Property="Margin" Value="2,0"/>
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                        <EventSetter Event="Expanded" Handler="FileTree_Expanded"/>
+                        <EventSetter Event="Collapsed" Handler="FileTree_Collapsed"/>
+                        <EventSetter Event="Selected" Handler="FileTree_Selected"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="{x:Type TreeViewItem}">

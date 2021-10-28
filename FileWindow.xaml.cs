@@ -22,7 +22,7 @@ namespace ComTransfer
     /// </summary>
     public partial class FileWindow : Window
     {
-        public List<FileNode> FileRoot { get; set; } = new List<FileNode>(){
+        public static List<FileNode> FileRoot { get; set; } = new List<FileNode>(){
             new FileNode(){ FileName = "远端计算机" }
         };
         public string Path { get; set; }
@@ -39,6 +39,27 @@ namespace ComTransfer
         private void Window_Closing(object sender, CancelEventArgs e)
         {
         }
+        private void FileTree_Collapsed(object sender, RoutedEventArgs e)
+        {
+            TreeViewItem item = sender as TreeViewItem;
+            FileNode node = item.DataContext as FileNode;
+            if (node == null)
+            {
+                e.Handled = true;
+                return;
+            }
+            if (node.IsFile)
+            {
+                TextBox_Path.Text = Path;
+                DialogResult = true;
+                e.Handled = true;
+                return;
+            }
+            if (node.IsLoaded)
+            {
+                node.IsLoaded = false;
+            }
+        }
         private void FileTree_Expanded(object sender, RoutedEventArgs e)
         {
             TreeViewItem item = sender as TreeViewItem;
@@ -53,6 +74,10 @@ namespace ComTransfer
                 TextBox_Path.Text = Path;
                 DialogResult = true;
                 e.Handled = true;
+                return;
+            }
+            if (node.IsLoaded)
+            {
                 return;
             }
             if (Border_Loading.Visibility == Visibility.Visible)
@@ -91,7 +116,7 @@ namespace ComTransfer
 
                 Application.Current.Dispatcher.Invoke((Action)(() =>
                 {
-                    ((FileNode)item.DataContext).SetFileList(list);
+                    node.SetFileList(list);
                     Border_Loading.Visibility = Visibility.Collapsed;
                 }));
             });
@@ -123,6 +148,8 @@ namespace ComTransfer
         public bool IsDisk { get; set; }
         public bool IsRoot { get; set; }
         public bool IsFile { get; set; }
+        public bool IsExpanded { get; set; }
+        public bool IsLoaded { get; set; }
         public List<FileNode> FileList { get; set; }
         public FileNode()
         {
@@ -158,8 +185,9 @@ namespace ComTransfer
         }
         public void SetFileList(List<FileNode> list)
         {
+            IsLoaded = true;
             FileList = list;
-            Notify(new { FileList });
+            Notify(new { FileList, IsLoaded });
         }
     }
 }
