@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace ComTransfer
@@ -162,6 +163,25 @@ namespace ComTransfer
             if (e.Key == Key.F1)
             {
                 OpenHelpFile();
+            }
+        }
+
+        private void Label_Folder_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Label label = sender as Label;
+
+            try
+            {
+                string folder = label.Content.ToString().Split('>')[1].TrimStart('[').TrimEnd(']');
+                using (Process process = new Process())
+                {
+                    process.StartInfo = new ProcessStartInfo(folder);
+                    process.Start();
+                }
+            }
+            catch
+            {
+
             }
         }
     }

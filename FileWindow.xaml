@@ -122,7 +122,7 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
                                                 <Path x:Name="Icon_Folder" Grid.Column="0" Visibility="Collapsed" Margin="0,0,4,0" Stroke="#323232" StrokeThickness="1" Width="16" Height="16" Data="M13 7L13 4L11 4L9 4L7 3L2 3L1 4L1 13M13 13L15 7L3 7L1 13Z"/>
-                                                <Path x:Name="Icon_Root" Grid.Column="0" Visibility="Collapsed" Margin="0,0,4,0" Stroke="#323232" StrokeThickness="1" Width="16" Height="16" Data="M1 3L15 3L15 12L1 12ZM8 12L8 15M4 15L12 15"/>
+                                                <Path x:Name="Icon_Root" Grid.Column="0" Visibility="Collapsed" Margin="0,0,4,0" Stroke="#323232" StrokeThickness="1" Width="16" Height="16" Data="M1 2L15 2L15 11L1 11ZM8 11L8 14M4 14L12 14"/>
                                                 <Path x:Name="Icon_Disk" Grid.Column="0" Visibility="Collapsed" Margin="0,0,4,0" Stroke="#323232" StrokeThickness="1" Width="16" Height="16" Data="M2 11L14 11L14 15L2 15ZM2 11L4 3L12 3L14 11M5 13L11 13"/>
                                                 <Path x:Name="Icon_File" Grid.Column="0" Visibility="Collapsed" Margin="0,0,4,0" Stroke="#323232" StrokeThickness="1" Width="16" Height="16" Data="M6 1L2 5L2 15L14 15L14 1ZM2 5L6 5L6 1M5 8L11 8M5 11L11 11"/>
                                                 <ContentPresenter x:Name="PART_Header" Grid.Column="1" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>

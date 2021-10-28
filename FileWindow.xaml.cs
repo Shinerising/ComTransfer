@@ -45,14 +45,10 @@ namespace ComTransfer
             FileNode node = item.DataContext as FileNode;
             if (node == null)
             {
-                e.Handled = true;
                 return;
             }
             if (node.IsFile)
             {
-                TextBox_Path.Text = Path;
-                DialogResult = true;
-                e.Handled = true;
                 return;
             }
             if (node.IsLoaded)

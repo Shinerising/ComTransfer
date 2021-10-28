@@ -129,7 +129,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Label Content="{Binding}" Style="{StaticResource Label_Status}" Background="#FFEE44" BorderBrush="#DDAA22" Foreground="#334466" Margin="0,0,4,0" ToolTip="存储目标地址"/>
+                        <Label Content="{Binding}" Style="{StaticResource Label_Status}" Background="#FFEE44" BorderBrush="#DDAA22" Foreground="#334466" Margin="0,0,4,0" ToolTip="存储目标地址" MouseDown="Label_Folder_MouseDown"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

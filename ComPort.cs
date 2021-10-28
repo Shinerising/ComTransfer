@@ -658,6 +658,7 @@ namespace ComTransfer
 
         private void FileTaskHandler(object sender, TaskManager.FileTaskEventArgs e)
         {
+            AddLog("计划任务", "开始准备发送", e.File);
             SendFile(e.File);
         }
 

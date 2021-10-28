@@ -29,8 +29,8 @@ namespace ComTransfer
         [XmlAttribute]
         public string Extension { get; set; } = "*.*";
         public DateTime TriggerTime => DateTime.Now.Date + TimeSpan.FromMinutes(Time);
-        public DateTime HeadTime => DateTime.Now.Date - TimeSpan.FromMinutes(FileTime_Head);
-        public DateTime TailTime => DateTime.Now.Date - TimeSpan.FromMinutes(FileTime_Tail);
+        public DateTime HeadTime => DateTime.Now - TimeSpan.FromMinutes(FileTime_Head);
+        public DateTime TailTime => DateTime.Now - TimeSpan.FromMinutes(FileTime_Tail);
         public string TriggerTimeText => string.Format("{0:00}:{1:00}", Time / 60, Time % 60);
         public override string ToString()
         {
@@ -128,7 +128,12 @@ namespace ComTransfer
                                     FileInfo fileInfo = new FileInfo(file);
                                     if (fileInfo.Exists)
                                     {
-                                        if (fileInfo.LastWriteTime >= task.TailTime && fileInfo.LastWriteTime <= task.HeadTime)
+                                        DateTime timestamp = fileInfo.LastWriteTime;
+                                        if (timestamp >= task.TailTime && timestamp <= task.HeadTime)
+                                        {
+                                            FileTaskHandler?.Invoke(this, new FileTaskEventArgs(fileInfo.FullName));
+                                        }
+                                        else if (timestamp <= task.TailTime && timestamp >= task.HeadTime)
                                         {
                                             FileTaskHandler?.Invoke(this, new FileTaskEventArgs(fileInfo.FullName));
                                         }
