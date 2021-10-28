@@ -62,19 +62,26 @@ namespace ComTransfer
 
             DataContext = this;
 
-            PortID = int.Parse(ConfigurationManager.AppSettings["com"]);
-            BaudRate = int.Parse(ConfigurationManager.AppSettings["baudrate"]);
-            DataBits = int.Parse(ConfigurationManager.AppSettings["databits"]);
-            StopBits = int.Parse(ConfigurationManager.AppSettings["stopbits"]);
-            Parity = ConfigurationManager.AppSettings["parity"].ToUpper();
-            IsHW = ConfigurationManager.AppSettings["ishw"].ToUpper() == "TRUE";
-            IsSW = ConfigurationManager.AppSettings["issw"].ToUpper() == "TRUE";
-            IsDTR = ConfigurationManager.AppSettings["isdtr"].ToUpper() == "TRUE";
-            IsRTS = ConfigurationManager.AppSettings["isrts"].ToUpper() == "TRUE";
+            try
+            {
+                PortID = int.Parse(ConfigurationManager.AppSettings["com"]);
+                BaudRate = int.Parse(ConfigurationManager.AppSettings["baudrate"]);
+                DataBits = int.Parse(ConfigurationManager.AppSettings["databits"]);
+                StopBits = int.Parse(ConfigurationManager.AppSettings["stopbits"]);
+                Parity = ConfigurationManager.AppSettings["parity"].ToUpper();
+                IsHW = ConfigurationManager.AppSettings["ishw"].ToUpper() == "TRUE";
+                IsSW = ConfigurationManager.AppSettings["issw"].ToUpper() == "TRUE";
+                IsDTR = ConfigurationManager.AppSettings["isdtr"].ToUpper() == "TRUE";
+                IsRTS = ConfigurationManager.AppSettings["isrts"].ToUpper() == "TRUE";
 
-            FolderConfig = ConfigurationManager.AppSettings["directory"];
+                FolderConfig = ConfigurationManager.AppSettings["directory"];
 
-            IsAutoRun = ConfigurationManager.AppSettings["autorun"].ToUpper() == "TRUE";
+                IsAutoRun = ConfigurationManager.AppSettings["autorun"].ToUpper() == "TRUE";
+            }
+            catch
+            {
+
+            }
 
             InitializeComponent();
         }

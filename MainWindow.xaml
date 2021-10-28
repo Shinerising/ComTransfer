@@ -78,7 +78,7 @@
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="串口信息"/>
             <StackPanel Grid.Column="1" Margin="4,0" Orientation="Horizontal">
-                <Label Content="{Binding PortInfo, FallbackValue=COM1 9600}" Style="{StaticResource Label_Status}" Background="#33AAFF" BorderBrush="#2255AA" Margin="0,0,4,0" ToolTip="串口参数"/>
+                <Label Content="{Binding PortInfo, FallbackValue=COM1 9600}" Style="{StaticResource Label_Status}" Background="#33AAFF" BorderBrush="#2255AA" Margin="0,0,4,0" ToolTip="串口参数" MouseDown="Label_Com_MouseDown"/>
                 <Label Content="ON" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_Open}" ToolTip="开启状态"/>
                 <Label Content="CTS" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_CTS}" ToolTip="CTS状态"/>
                 <Label Content="DSR" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_DSR}" ToolTip="DSR状态"/>

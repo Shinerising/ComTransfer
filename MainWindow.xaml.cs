@@ -28,7 +28,7 @@ namespace ComTransfer
 
         private void CheckAutoRun()
         {
-            if (ConfigurationManager.AppSettings["autorun"].ToUpper() == "TRUE")
+            if (ConfigurationManager.AppSettings["autorun"]?.ToUpper() == "TRUE")
             {
                 port.DelayOpen(1000);
             }
@@ -176,6 +176,22 @@ namespace ComTransfer
                 using (Process process = new Process())
                 {
                     process.StartInfo = new ProcessStartInfo(folder);
+                    process.Start();
+                }
+            }
+            catch
+            {
+
+            }
+        }
+        private void Label_Com_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            try
+            {
+                string command = "/K mode COM" + port.PortID;
+                using (Process process = new Process())
+                {
+                    process.StartInfo = new ProcessStartInfo("cmd.exe", command) { WorkingDirectory = "/" };
                     process.Start();
                 }
             }
