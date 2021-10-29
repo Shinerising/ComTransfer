@@ -8,7 +8,7 @@
 
 一款支持计算机之间通过串口执行文件发送、文件拉取、自动化文件备份等操作的轻量级软件。
 
-![ComTransfer App](screenshot.png)
+<img width="426" src="Images/image00.png">
 
 ## 软件功能
 
@@ -39,13 +39,19 @@
 
 ### 程序设置
 
-### 打开串口通信
+<img width="387" src="Images/image01.png">
 
-### 拉取文件
+### 打开串口通信
 
 ### 发送文件
 
+### 拉取文件
+
+<img width="309" src="Images/image02.png">
+
 ### 使用计划任务
+
+<img width="343" src="Images/image03.png">
 
 ## 注意事项
 
