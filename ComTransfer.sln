@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31321.278
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31825.309
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComTransfer", "ComTransfer.csproj", "{66413FCC-BABF-405F-89C5-A07D193C323C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{CAF87F8A-B05C-4B1F-8E22-824DB62AFE33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{66413FCC-BABF-405F-89C5-A07D193C323C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{66413FCC-BABF-405F-89C5-A07D193C323C}.Release|x86.ActiveCfg = Release|Any CPU
 		{66413FCC-BABF-405F-89C5-A07D193C323C}.Release|x86.Build.0 = Release|Any CPU
+		{CAF87F8A-B05C-4B1F-8E22-824DB62AFE33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CAF87F8A-B05C-4B1F-8E22-824DB62AFE33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CAF87F8A-B05C-4B1F-8E22-824DB62AFE33}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CAF87F8A-B05C-4B1F-8E22-824DB62AFE33}.Debug|x86.Build.0 = Debug|Any CPU
+		{CAF87F8A-B05C-4B1F-8E22-824DB62AFE33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CAF87F8A-B05C-4B1F-8E22-824DB62AFE33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CAF87F8A-B05C-4B1F-8E22-824DB62AFE33}.Release|x86.ActiveCfg = Release|Any CPU
+		{CAF87F8A-B05C-4B1F-8E22-824DB62AFE33}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
