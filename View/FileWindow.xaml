@@ -44,7 +44,7 @@
             <TextBox x:Name="TextBox_Path" IsReadOnly="True"/>
         </Border>
         <Border Grid.Row="1" Margin="4,4,4,0">
-            <TreeView x:Name="TreeView_File" ItemsSource="{Binding FileRoot}" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling">
+            <TreeView x:Name="TreeView_File" ItemsSource="{Binding FileRoot}" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" ScrollViewer.IsDeferredScrollingEnabled="{Binding IsScrollDeferEnabled}">
                 <TreeView.Resources>
                     <Style x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
                         <Setter Property="Focusable" Value="False" />

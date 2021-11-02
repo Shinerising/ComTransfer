@@ -23,15 +23,25 @@ namespace ComTransfer
     public partial class FileWindow : Window
     {
         public static List<FileNode> FileRoot { get; set; } = new List<FileNode>(){
-            new FileNode(){ FileName = "远端计算机" }
+            new FileNode(){ FileName = "远程计算机" }
         };
         public string Path { get; set; }
+        public bool IsScrollDeferEnabled => Environment.OSVersion.Version.Major < 6;
+        public static bool IsWaiting;
 
         public FileWindow(Window window)
         {
             Owner = window;
 
             DataContext = this;
+
+            if (IsWaiting)
+            {
+                FileRoot = new List<FileNode>(){
+                    new FileNode(){ FileName = "远程计算机" }
+                };
+                IsWaiting = false;
+            }
 
             InitializeComponent();
         }
@@ -76,10 +86,11 @@ namespace ComTransfer
             {
                 return;
             }
-            if (Border_Loading.Visibility == Visibility.Visible)
+            if (IsWaiting || Border_Loading.Visibility == Visibility.Visible)
             {
                 return;
             }
+            IsWaiting = true;
             Border_Loading.Visibility = Visibility.Visible;
             MainWindow window = Owner as MainWindow;
             string root = node.FullName;
@@ -114,6 +125,7 @@ namespace ComTransfer
                 {
                     node.SetFileList(list);
                     Border_Loading.Visibility = Visibility.Collapsed;
+                    IsWaiting = false;
                 }));
             });
         }
