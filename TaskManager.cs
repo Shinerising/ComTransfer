@@ -28,6 +28,19 @@ namespace ComTransfer
 
         [XmlAttribute]
         public string Extension { get; set; } = "*.*";
+
+        [XmlIgnore]
+        public int Hour
+        {
+            get => Time / 60;
+            set => Time = value * 60 + Time % 60;
+        }
+        [XmlIgnore]
+        public int Minute
+        {
+            get => Time % 60;
+            set => Time = Time - (Time % 60) + value;
+        }
         public DateTime TriggerTime => DateTime.Now.Date + TimeSpan.FromMinutes(Time);
         public DateTime HeadTime => DateTime.Now - TimeSpan.FromMinutes(FileTime_Head);
         public DateTime TailTime => DateTime.Now - TimeSpan.FromMinutes(FileTime_Tail);

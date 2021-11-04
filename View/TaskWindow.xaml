@@ -48,14 +48,16 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="150"/>
+                <RowDefinition Height="120"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <ListBox x:Name="ListBox_Task" Grid.Row="0" ItemsSource="{Binding TaskList}" Margin="4,4,4,0">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Time}"/>
+                            <TextBlock Text="{Binding Hour, StringFormat={}{0:00}}"/>
+                            <TextBlock Text=":"/>
+                            <TextBlock Text="{Binding Minute, StringFormat={}{0:00}}"/>
                             <TextBlock Text="{Binding Folder}" Margin="4,0,0,0"/>
                             <TextBlock Text="{Binding Extension}" Margin="4,0,0,0"/>
                         </StackPanel>
@@ -96,8 +98,9 @@
             </StackPanel.Style>
             <StackPanel Orientation="Horizontal">
                 <Label Content="启动时间"/>
-                <TextBox Text="{Binding Time}" Width="50"/>
-                <Label Content="分钟"/>
+                <TextBox Text="{Binding Hour}" Width="30"/>
+                <Label Content=":" Width="13"/>
+                <TextBox Text="{Binding Minute}" Width="30"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Label Content="文件夹"/>
@@ -111,13 +114,9 @@
                 <Label Content="文件修改时间区间"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Label Content="大于"/>
-                <TextBox Text="{Binding FileTime_Head}" MinWidth="50"/>
-                <Label Content="分钟"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Label Content="小于"/>
-                <TextBox Text="{Binding FileTime_Tail}" MinWidth="50"/>
+                <TextBox Text="{Binding FileTime_Head}" MinWidth="30"/>
+                <Label Content="分钟 ~"/>
+                <TextBox Text="{Binding FileTime_Tail}" MinWidth="30"/>
                 <Label Content="分钟"/>
             </StackPanel>
         </StackPanel>
