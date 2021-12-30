@@ -852,15 +852,22 @@ namespace ComTransfer
             }
             string log = filename == null || filename.Length == 0 ? string.Format("[{0}] {1} {2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message) : string.Format("[{0}] {1} {2} 文件：{3}", DateTime.Now.ToString("MM-dd HH:mm:ss"), brief, message, filename);
 
-            Application.Current.Dispatcher.Invoke((Action)(() =>
+            try
             {
-                LogList.Add(log);
-
-                while (LogList.Count > LogLimit)
+                Application.Current.Dispatcher.Invoke((Action)(() =>
                 {
-                    LogList.RemoveAt(0);
-                }
-            }));
+                    LogList.Add(log);
+
+                    while (LogList.Count > LogLimit)
+                    {
+                        LogList.RemoveAt(0);
+                    }
+                }));
+            }
+            catch
+            {
+
+            }
         }
 
         public void AddTransferRecord(bool isSend, string filename)
@@ -870,15 +877,23 @@ namespace ComTransfer
                 return;
             }
             string record = string.Format("[{0}] {1}文件：{2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), isSend ? "已发送" : "已接收", filename);
-            Application.Current.Dispatcher.Invoke((Action)(() =>
-            {
-                RecordList.Add(record);
 
-                while (RecordList.Count > RecordLimit)
+            try
+            {
+                Application.Current.Dispatcher.Invoke((Action)(() =>
                 {
-                    RecordList.RemoveAt(0);
-                }
-            }));
+                    RecordList.Add(record);
+
+                    while (RecordList.Count > RecordLimit)
+                    {
+                        RecordList.RemoveAt(0);
+                    }
+                }));
+            }
+            catch
+            {
+
+            }
         }
         public void ClearLog()
         {
