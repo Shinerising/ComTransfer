@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
@@ -59,6 +60,7 @@ namespace ComTransfer
 
             }
         }
+
         private void Button_Task_Click(object sender, RoutedEventArgs e)
         {
             new TaskWindow(this).ShowDialog();
@@ -119,7 +121,7 @@ namespace ComTransfer
             port.ClearLog();
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             port.Dispose();
         }
