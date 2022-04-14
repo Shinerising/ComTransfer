@@ -225,8 +225,7 @@ namespace ComTransfer
                                 FileInfo fileInfo = new FileInfo(node.FilePath);
                                 if (fileInfo.Exists)
                                 {
-                                    FailFileList.Add(new FailFileNode() { FilePath = fileInfo.FullName });
-                                    FileTaskHandler?.Invoke(this, new FileTaskEventArgs(fileInfo.FullName));
+                                    FileTaskHandler?.Invoke(this, new FileTaskEventArgs(fileInfo.FullName) { Message = string.Format("错误重传计数：{0}", node.FailCount) });
                                 }
                             }
                             catch
