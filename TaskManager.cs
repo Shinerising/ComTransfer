@@ -54,10 +54,24 @@ namespace ComTransfer
             return MemberwiseClone() as TaskNode;
         }
     }
+    [Serializable]
+    [XmlType(TypeName = "File")]
+    public class FailFileNode
+    {
+        [XmlAttribute]
+        public string FilePath { get; set; }
+        [XmlAttribute]
+        public DateTime FailTime { get; set; }
+        [XmlAttribute]
+        public DateTime RetryTime { get; set; }
+        [XmlAttribute]
+        public int FailCount { get; set; }
+    }
     public class TaskManager
     {
         public static TaskManager Instance = new TaskManager();
         public ObservableCollection<TaskNode> TaskList { get; set; }
+        public List<FailFileNode> FailFileList { get; set; }
         public static List<TaskNode> ReadData()
         {
             try
@@ -88,23 +102,89 @@ namespace ComTransfer
             {
             }
         }
+        public static List<FailFileNode> ReadFailFileData()
+        {
+            try
+            {
+                using (StreamReader sr = new StreamReader("FailFileList.xml", Encoding.UTF8))
+                {
+                    XmlSerializer reader = new XmlSerializer(typeof(List<FailFileNode>));
+                    return reader.Deserialize(sr) as List<FailFileNode>;
+                }
+            }
+            catch
+            {
+                return new List<FailFileNode>();
+            }
+        }
+        public static void SaveFailFileData(List<FailFileNode> list)
+        {
+            try
+            {
+                using (StreamWriter sw = new StreamWriter("FailFileList.xml", false, Encoding.UTF8))
+                {
+                    XmlSerializer writer = new XmlSerializer(typeof(List<FailFileNode>));
+                    writer.Serialize(sw, list);
+                }
+            }
+            catch
+            {
+            }
+        }
         public class FileTaskEventArgs : EventArgs
         {
-            private readonly string filename;
-
+            private readonly string file;
+            private readonly bool succeed;
             public FileTaskEventArgs(string filename)
             {
-                this.filename = filename;
+                file = filename;
             }
+            public FileTaskEventArgs(string filename, bool isSucceed)
+            {
+                file = filename;
+                succeed = isSucceed;
+            }
+            public string Message { get; set; }
 
-            public string File => this.filename;
+            public string File => file;
+            public bool IsSucceed => succeed;
         }
         public EventHandler<FileTaskEventArgs> FileTaskHandler;
+        public EventHandler<FileTaskEventArgs> FileSendedTaskHandler;
         private TaskManager()
         {
             TaskList = new ObservableCollection<TaskNode>();
             ReadData().ForEach(item => TaskList.Add(item));
+
+            FailFileList = ReadFailFileData();
+
             Start();
+
+            FileSendedTaskHandler += FileSendedHandler;
+        }
+        private void FileSendedHandler(object sender, FileTaskEventArgs e)
+        {
+            string filename = e.File;
+            FailFileNode node;
+
+            lock (FailFileList)
+            {
+                node = FailFileList.FirstOrDefault(item => item.FilePath == filename && item.FailCount >= 0 && item.FailCount < 3);
+            }
+
+            if (node != null)
+            {
+                if (e.IsSucceed)
+                {
+                    node.FailCount = -1;
+                }
+                else
+                {
+                    node.FailCount++;
+                    node.FailTime = DateTime.Now;
+                    node.RetryTime = DateTime.Now + TimeSpan.FromHours(node.FailCount);
+                }
+            }
         }
 
         public void Refresh()
@@ -124,7 +204,40 @@ namespace ComTransfer
                     DateTime previousTime = currentTime;
                     currentTime = DateTime.Now;
 
+                    while (FailFileList.Count > 100)
+                    {
+                        FailFileList.RemoveAt(0);
+                    }
+
+                    FailFileList.RemoveAll(item => item.FailCount == -1 || item.FailCount >= 3);
+
+                    foreach (FailFileNode node in FailFileList)
+                    {
+                        if (node.FailCount == 0)
+                        {
+                            continue;
+                        }
+                        DateTime taskTime = node.RetryTime;
+                        if (previousTime < taskTime && currentTime >= taskTime)
+                        {
+                            try
+                            {
+                                FileInfo fileInfo = new FileInfo(node.FilePath);
+                                if (fileInfo.Exists)
+                                {
+                                    FailFileList.Add(new FailFileNode() { FilePath = fileInfo.FullName });
+                                    FileTaskHandler?.Invoke(this, new FileTaskEventArgs(fileInfo.FullName));
+                                }
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                    }
+
                     List<TaskNode> list = TaskList.ToList();
+
                     foreach (TaskNode task in TaskList)
                     {
                         if (task.Folder == null || task.Folder.Length == 0 || task.Extension == null || task.Extension.Length == 0)
@@ -144,10 +257,12 @@ namespace ComTransfer
                                         DateTime timestamp = fileInfo.LastWriteTime;
                                         if (timestamp >= task.TailTime && timestamp <= task.HeadTime)
                                         {
+                                            FailFileList.Add(new FailFileNode() { FilePath = fileInfo.FullName });
                                             FileTaskHandler?.Invoke(this, new FileTaskEventArgs(fileInfo.FullName));
                                         }
                                         else if (timestamp <= task.TailTime && timestamp >= task.HeadTime)
                                         {
+                                            FailFileList.Add(new FailFileNode() { FilePath = fileInfo.FullName });
                                             FileTaskHandler?.Invoke(this, new FileTaskEventArgs(fileInfo.FullName));
                                         }
                                     }

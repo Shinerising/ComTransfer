@@ -457,7 +457,7 @@ namespace ComTransfer
                             }
                             catch (Exception e)
                             {
-                                AddLog("文件发送", "文件处理失败：" + e.Message, shortname);
+                                AddLog("文件接收", "文件处理失败：" + e.Message, shortname);
                             }
                         }
                     }
@@ -489,11 +489,13 @@ namespace ComTransfer
                                 AddLog("文件发送", "检查文件属性", shortname);
                                 if (!fileInfo.Exists)
                                 {
+                                    TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                     AddLog("文件发送", "文件不存在", shortname);
                                     filename = null;
                                 }
                                 if (fileInfo.Length >= 1024 * 1024 * 20)
                                 {
+                                    TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                     AddLog("文件发送", "文件体积超过限制", shortname);
                                     filename = null;
                                 }
@@ -518,6 +520,7 @@ namespace ComTransfer
                             }
                             catch (Exception e)
                             {
+                                TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                 AddLog("文件发送", "文件处理失败:" + e.Message, shortname);
                                 filename = null;
                             }
@@ -540,16 +543,19 @@ namespace ComTransfer
                                     if (result < 0)
                                     {
                                         string message = PCOMM.GetTransferErrorMessage(result);
+                                        TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                         AddLog("文件发送", "文件发送失败：" + message, shortname);
                                     }
                                     else
                                     {
+                                        TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, true));
                                         AddLog("文件发送", "文件发送成功", shortname);
                                         AddTransferRecord(true, sourcename);
                                     }
                                 }
                                 catch (Exception e)
                                 {
+                                    TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                     AddLog("文件发送", "文件发送失败：" + e.Message, shortname);
                                 }
                                 finally
@@ -659,6 +665,10 @@ namespace ComTransfer
         private void FileTaskHandler(object sender, TaskManager.FileTaskEventArgs e)
         {
             AddLog("计划任务", "开始准备发送", e.File);
+            if (e.Message != null)
+            {
+                AddLog("计划任务", e.Message, e.File);
+            }
             SendFile(e.File);
         }
 

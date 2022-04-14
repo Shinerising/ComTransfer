@@ -28,6 +28,7 @@ namespace ComTransfer
             FocusManager.SetFocusedElement(this, this);
 
             TaskManager.SaveData(TaskList.ToList());
+            TaskManager.SaveFailFileData(TaskManager.Instance.FailFileList);
         }
 
         private void ListBox_Selected(object sender, RoutedEventArgs e)
