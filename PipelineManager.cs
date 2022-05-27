@@ -15,6 +15,7 @@ namespace ComTransfer
             Default,
             WorkingLog,
             TransferLog,
+            ConnectParam,
             ConnectState,
             UploadProgress,
             DownloadProgress,

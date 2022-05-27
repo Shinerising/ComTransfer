@@ -592,6 +592,7 @@ namespace ComTransfer
 
                     Notify(new { PortStatus, Status_Open, Status_DSR, Status_CTS, Status_RI, Status_CD });
 
+                    PipelineManager.SendCommand(PipelineManager.CommandType.ConnectParam, string.Format("COM{0},{1}", PortID, BaudRate));
                     PipelineManager.SendCommand(PipelineManager.CommandType.ConnectState, string.Join(",", Status_Open, Status_DSR, Status_CTS, Status_RI, Status_CD));
 
                     Thread.Sleep(500);
