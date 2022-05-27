@@ -256,6 +256,7 @@ namespace ComTransfer
             catch (Exception e)
             {
                 AddLog("程序故障", "程序配置读取失败：" + e.Message);
+                IsOpening = false;
                 return false;
             }
 
@@ -265,6 +266,7 @@ namespace ComTransfer
                 if ((result = PCOMM.sio_open(PortID)) != PCOMM.SIO_OK)
                 {
                     AddLog("程序故障", "串口通信打开失败：" + PCOMM.GetErrorMessage(result));
+                    IsOpening = false;
                     return false;
                 }
 
@@ -273,6 +275,7 @@ namespace ComTransfer
             catch (Exception e)
             {
                 AddLog("程序故障", "串口通信打开失败：" + e.Message);
+                IsOpening = false;
                 return false;
             }
 
