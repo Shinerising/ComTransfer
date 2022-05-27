@@ -25,6 +25,8 @@ namespace ComTransfer
             InitializeComponent();
 
             CheckAutoRun();
+
+            PipelineManager.Initialize();
         }
 
         private void CheckAutoRun()
@@ -123,6 +125,15 @@ namespace ComTransfer
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            if (!PipelineManager.IsConnected)
+            {
+                string password = ConfigurationManager.AppSettings["exitpassword"] ?? "exit";
+                bool? result = PasswordWindow.Show(this, "请输入退出密码", password, "密码确认", false);
+                if (result != true)
+                {
+                    e.Cancel = true;
+                }
+            }
             port.Dispose();
         }
 
