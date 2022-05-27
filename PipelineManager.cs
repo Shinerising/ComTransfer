@@ -10,6 +10,21 @@ namespace ComTransfer
 {
     internal class PipelineManager
     {
+        public enum CommandType
+        {
+            Default,
+            WorkingLog,
+            TransferLog,
+            ConnectState,
+            UploadProgress,
+            DownloadProgress,
+            FileTreeRequest,
+            FileTreeResponse,
+            FilePushRequest,
+            FilePushResponse,
+            FilePullRequest,
+            FilePullResponse
+        }
         public const string PipelineName = "PIPE_COMTRANSFER";
         public static bool IsConnected => stream != null && stream.IsConnected;
         private static NamedPipeClientStream stream;
@@ -17,6 +32,11 @@ namespace ComTransfer
         {
             stream = new NamedPipeClientStream(".", PipelineName, PipeDirection.InOut, PipeOptions.Asynchronous);
             StartMonitoring();
+        }
+        public static void SendCommand(CommandType command, string data)
+        {
+            string text = string.Format("{0}:{1}", command, data);
+            WriteMessage(text);
         }
 
         private static void StartMonitoring()
@@ -52,14 +72,20 @@ namespace ComTransfer
             {
                 return null;
             }
-
-            var reader = new StreamReader(stream);
-            if (reader.EndOfStream)
+            try
             {
-                return string.Empty;
+                var reader = new StreamReader(stream);
+                if (reader.EndOfStream)
+                {
+                    return string.Empty;
+                }
+                string message = await reader.ReadLineAsync();
+                return message;
             }
-            string message = await reader.ReadLineAsync();
-            return message;
+            catch
+            {
+                return null;
+            }
         }
 
         public static async void WriteMessage(string message)
@@ -69,9 +95,18 @@ namespace ComTransfer
                 return;
             }
 
-            var writer = new StreamWriter(stream);
-            writer.AutoFlush = true;
-            await writer.WriteLineAsync(message);
+            try
+            {
+                var writer = new StreamWriter(stream)
+                {
+                    AutoFlush = true
+                };
+                await writer.WriteLineAsync(message);
+            }
+            catch
+            {
+
+            }
         }
     }
 }

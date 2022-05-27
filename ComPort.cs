@@ -589,7 +589,10 @@ namespace ComTransfer
                 {
                     int result = PCOMM.sio_lstatus(PortID);
                     PortStatus = result;
+
                     Notify(new { PortStatus, Status_Open, Status_DSR, Status_CTS, Status_RI, Status_CD });
+
+                    PipelineManager.SendCommand(PipelineManager.CommandType.ConnectState, string.Join(",", Status_Open, Status_DSR, Status_CTS, Status_RI, Status_CD));
 
                     Thread.Sleep(500);
                 }
