@@ -66,6 +66,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ComPort.cs" />
+    <Compile Include="LogHelper.cs" />
     <Compile Include="PipelineManager.cs" />
     <Compile Include="View\FileWindow.xaml.cs">
       <DependentUpon>FileWindow.xaml</DependentUpon>

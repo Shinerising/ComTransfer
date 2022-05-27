@@ -873,6 +873,8 @@ namespace ComTransfer
                         LogList.RemoveAt(0);
                     }
                 }));
+
+                LogHelper.WriteLog("SYSTEM", log);
             }
             catch
             {
@@ -899,6 +901,8 @@ namespace ComTransfer
                         RecordList.RemoveAt(0);
                     }
                 }));
+
+                LogHelper.WriteLog("RECORD", record);
             }
             catch
             {
