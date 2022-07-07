@@ -121,7 +121,7 @@ namespace ComTransfer
                     }
                 }
 
-                Application.Current.Dispatcher.Invoke((Action)(() =>
+                Application.Current.Dispatcher?.Invoke((Action)(() =>
                 {
                     node.SetFileList(list);
                     Border_Loading.Visibility = Visibility.Collapsed;
