@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Configuration;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Configuration;
-using System.Collections.ObjectModel;
 using System.Windows;
-using System.Linq;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Security.AccessControl;
 
 namespace ComTransfer
 {
@@ -446,7 +445,7 @@ namespace ComTransfer
                                     AddLog("文件接收", "正在解析指令", shortname);
                                     try
                                     {
-                                        string text = File.ReadAllText(filename);
+                                        string text = DecompressText(File.ReadAllBytes(filename));
                                         ResolveCommand(text);
                                     }
                                     catch
@@ -832,11 +831,9 @@ namespace ComTransfer
                 string tempFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                 Directory.CreateDirectory(tempFolder);
                 string filename = Path.Combine(tempFolder, DateTime.Now.ToString("yyyyMMddHHmmss") + ".APPCOMMAND");
+                byte[] data = CompressTextToBytes(string.Format("{0} {1}", command, param));
 
-                using (StreamWriter sw = new StreamWriter(filename, false, Encoding.UTF8))
-                {
-                    sw.Write(string.Format("{0} {1}", command, param));
-                }
+                File.WriteAllBytes(filename, data);
 
                 SendFile(filename);
             }
@@ -876,6 +873,90 @@ namespace ComTransfer
             }
         }
 
+        private string CompressText(string text)
+        {
+            try
+            {
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    using (DeflateStream deflateStream = new DeflateStream(stream, CompressionMode.Compress))
+                    {
+                        byte[] data = Encoding.Default.GetBytes(text);
+                        deflateStream.Write(data, 0, data.Length);
+                    }
+                    return Encoding.Default.GetString(stream.ToArray());
+                }
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private byte[] CompressTextToBytes(string text)
+        {
+            try
+            {
+                using (MemoryStream stream = new MemoryStream())
+                {
+                    using (DeflateStream deflateStream = new DeflateStream(stream, CompressionMode.Compress))
+                    {
+                        byte[] data = Encoding.Default.GetBytes(text);
+                        deflateStream.Write(data, 0, data.Length);
+                    }
+                    return stream.ToArray();
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private string DecompressText(byte[] data)
+        {
+            try
+            {
+                using (MemoryStream outputStream = new MemoryStream())
+                {
+                    using (MemoryStream inputStream = new MemoryStream(data))
+                    {
+                        using (DeflateStream deflateStream = new DeflateStream(inputStream, CompressionMode.Decompress))
+                        {
+                            deflateStream.CopyTo(outputStream);
+                            return Encoding.Default.GetString(outputStream.ToArray());
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private string DecompressText(string text)
+        {
+            try
+            {
+                using (MemoryStream outputStream = new MemoryStream())
+                {
+                    using (MemoryStream inputStream = new MemoryStream(Encoding.Default.GetBytes(text)))
+                    {
+                        using (DeflateStream deflateStream = new DeflateStream(inputStream, CompressionMode.Decompress))
+                        {
+                            deflateStream.CopyTo(outputStream);
+                            return Encoding.Default.GetString(outputStream.ToArray());
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
         private string GetFileTreeText(string root)
         {
             try
@@ -889,20 +970,29 @@ namespace ComTransfer
                 StringBuilder stringBuilder = new StringBuilder();
                 foreach (string entry in Directory.EnumerateFileSystemEntries(root))
                 {
-                    FileAttributes attributes = File.GetAttributes(entry);
+                    FileInfo info = new FileInfo(entry);
 
-                    if (attributes.HasFlag(FileAttributes.Hidden))
+                    if (info.Attributes.HasFlag(FileAttributes.Hidden))
                     {
                         continue;
                     }
-                    else if (attributes.HasFlag(FileAttributes.Directory))
+                    else if (info.Attributes.HasFlag(FileAttributes.Directory))
                     {
                         stringBuilder.Append("F>");
+                        stringBuilder.Append("[");
+                        stringBuilder.Append(info.LastWriteTimeUtc);
+                        stringBuilder.Append("]");
                         stringBuilder.Append(entry.Substring(rootLength).TrimStart('\\'));
                         stringBuilder.Append("|");
                     }
                     else
                     {
+                        stringBuilder.Append("[");
+                        stringBuilder.Append(info.Length);
+                        stringBuilder.Append("]");
+                        stringBuilder.Append("[");
+                        stringBuilder.Append(info.LastWriteTimeUtc);
+                        stringBuilder.Append("]");
                         stringBuilder.Append(entry.Substring(rootLength).TrimStart('\\'));
                         stringBuilder.Append("|");
                     }

@@ -152,6 +152,8 @@ namespace ComTransfer
     {
         public string FileName { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
+        public DateTime ModifiedTime { get; set; }
+        public long Length { get; set; }
         public bool IsDirectory { get; set; }
         public bool IsDisk { get; set; }
         public bool IsRoot { get; set; }
@@ -170,26 +172,63 @@ namespace ComTransfer
             {
                 return;
             }
-            if (option.StartsWith("D>"))
+            try
             {
-                IsDisk = true;
-                FileName = option.Substring(2);
-                FullName = FileName;
-                FileList = new List<FileNode>();
-                return;
+                if (option.StartsWith("D>"))
+                {
+                    IsDisk = true;
+                    FileName = option.Substring(2);
+                    FullName = FileName;
+                    FileList = new List<FileNode>();
+                }
+                else if (option.StartsWith("F>"))
+                {
+                    IsDirectory = true;
+                    int offset = 2;
+                    {
+                        int head = option.IndexOf('[', offset);
+                        int tail = option.IndexOf(']', offset);
+                        if (head != -1 && tail != -1 && tail > head)
+                        {
+                            ModifiedTime = DateTime.Parse(option.Substring(head + 1, tail - head - 1));
+                            offset = tail + 1;
+                        }
+
+                    }
+                    FileName = option.Substring(offset);
+                    FullName = root.EndsWith("\\") ? root + FileName : root + "\\" + FileName;
+                    FileList = new List<FileNode>();
+                }
+                else
+                {
+                    int offset = 0;
+                    {
+                        int head = option.IndexOf('[', offset);
+                        int tail = option.IndexOf(']', offset);
+                        if (head != -1 && tail != -1 && tail > head)
+                        {
+                            Length = long.Parse(option.Substring(head + 1, tail - head - 1));
+                            offset = tail + 1;
+                        }
+                    }
+                    {
+                        int head = option.IndexOf('[', offset);
+                        int tail = option.IndexOf(']', offset);
+                        if (head != -1 && tail != -1 && tail > head)
+                        {
+                            ModifiedTime = DateTime.Parse(option.Substring(head + 1, tail - head - 1));
+                            offset = tail + 1;
+                        }
+                    }
+                    IsFile = true;
+                    FileName = option.Substring(offset);
+                    FullName = root.EndsWith("\\") ? root + FileName : root + "\\" + FileName;
+                }
             }
-            if (option.StartsWith("F>"))
+            catch
             {
-                IsDirectory = true;
-                FileName = option.Substring(2);
-                FullName = root.EndsWith("\\") ? root + FileName : root + "\\" + FileName;
-                FileList = new List<FileNode>();
-                return;
+
             }
-            IsFile = true;
-            FileName = option;
-            FullName = root.EndsWith("\\") ? root + FileName : root + "\\" + FileName;
-            return;
         }
         public void SetFileList(List<FileNode> list)
         {
