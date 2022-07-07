@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ComTransfer
@@ -42,19 +43,21 @@ namespace ComTransfer
 
         private static void StartMonitoring()
         {
-            Task.Factory.StartNew(async () =>
+            Task.Factory.StartNew(() =>
             {
                 while (true)
                 {
                     if (!stream.IsConnected)
                     {
-                        await stream.ConnectAsync();
+                        stream.Connect();
                     }
-                    else
+                    else if (stream.CanRead)
                     {
-                        string message = await ReadMessage();
+                        string message = ReadMessage();
                         ResolveMessage(message);
                     }
+
+                    Thread.Sleep(100);
                 }
             }, TaskCreationOptions.LongRunning);
         }
@@ -67,7 +70,7 @@ namespace ComTransfer
             }
         }
 
-        public static async Task<string> ReadMessage()
+        public static string ReadMessage()
         {
             if (stream == null || !stream.IsConnected)
             {
@@ -80,7 +83,7 @@ namespace ComTransfer
                 {
                     return string.Empty;
                 }
-                string message = await reader.ReadLineAsync();
+                string message = reader.ReadLine();
                 return message;
             }
             catch
@@ -89,7 +92,7 @@ namespace ComTransfer
             }
         }
 
-        public static async void WriteMessage(string message)
+        public static void WriteMessage(string message)
         {
             if (stream == null || !stream.IsConnected)
             {
@@ -102,7 +105,7 @@ namespace ComTransfer
                 {
                     AutoFlush = true
                 };
-                await writer.WriteLineAsync(message);
+                writer.WriteLine(message);
             }
             catch
             {

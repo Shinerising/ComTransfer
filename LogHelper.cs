@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace ComTransfer
 {
@@ -57,7 +58,44 @@ namespace ComTransfer
             }
         }
 
-        public static bool WriteLog(string name, string text)
+        private static bool IsInitialized;
+        private static Queue<KeyValuePair<string, string>> logQueue = new Queue<KeyValuePair<string, string>>();
+
+        public static void Initialize()
+        {
+            IsInitialized = true;
+
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    while (logQueue.Count > 0)
+                    {
+                        var pair = logQueue.Dequeue();
+                        WriteLog(pair.Key, pair.Value);
+                    }
+
+                    Thread.Sleep(500);
+                }
+            }, TaskCreationOptions.LongRunning);
+        }
+
+        public static void PushLog(string name, string text)
+        {
+            if (!IsInitialized)
+            {
+                Initialize();
+            }
+
+            logQueue.Enqueue(new KeyValuePair<string, string>(name, text));
+
+            while (logQueue.Count > 256)
+            {
+                logQueue.Dequeue();
+            }
+        }
+
+        private static bool WriteLog(string name, string text)
         {
             if (name + text == lastMessage)
             {
@@ -105,10 +143,8 @@ namespace ComTransfer
             }
             lastSaveTime = currentTime;
 
-            string timeString = currentTime.ToString("yyyy-MM-dd HH:mm:ss,fff");
-            string nameString = name;
             string dataString = text ?? string.Empty;
-            string log = string.Format("{0} {1} {2}", timeString, nameString, dataString);
+            string log = dataString;
             string path = Path.Combine(GetFolder(name), currentTime.ToString("yyyyMMdd") + ".log");
             try
             {

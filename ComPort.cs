@@ -282,6 +282,8 @@ namespace ComTransfer
                 return false;
             }
 
+            AddLog("操作记录", "串行端口打开：" + PortInfo);
+
             IsOpen = true;
             IsOpening = false;
             Notify(new { IsOpen, IsOpening });
@@ -298,6 +300,9 @@ namespace ComTransfer
                 AddLog("程序故障", "串口通信关闭失败：" + PCOMM.GetErrorMessage(result));
                 return false;
             }
+
+            AddLog("操作记录", "串行端口关闭：" + PortInfo);
+
             IsOpen = false;
             Notify(new { IsOpen });
             return true;
@@ -381,6 +386,8 @@ namespace ComTransfer
                         catch (Exception e)
                         {
                             AddLog("文件接收", "文件接收失败：" + e.Message, filename);
+
+                            SendErrorReport(string.Format("文件{1}接收失败：{0}", e.Message, filename));
                         }
                         finally
                         {
@@ -464,6 +471,8 @@ namespace ComTransfer
                             catch (Exception e)
                             {
                                 AddLog("文件接收", "文件处理失败：" + e.Message, shortname);
+
+                                SendErrorReport(string.Format("文件{1}处理失败：{0}", e.Message, shortname));
                             }
                         }
                     }
@@ -497,12 +506,14 @@ namespace ComTransfer
                                 {
                                     TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                     AddLog("文件发送", "文件不存在", shortname);
+                                    SendErrorReport(string.Format("文件{0}不存在", shortname), filename);
                                     filename = null;
                                 }
                                 if (fileInfo.Length >= 1024 * 1024 * SizeLimit)
                                 {
                                     TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                     AddLog("文件发送", "文件体积超过限制", shortname);
+                                    SendErrorReport(string.Format("文件{0}体积超过限制", shortname), filename);
                                     filename = null;
                                 }
                                 else if(fileInfo.Extension.ToUpper() != ".APPCOMMAND")
@@ -528,6 +539,7 @@ namespace ComTransfer
                             {
                                 TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                 AddLog("文件发送", "文件处理失败:" + e.Message, shortname);
+                                SendErrorReport(string.Format("文件{1}处理失败：{0}", e.Message, shortname), filename);
                                 filename = null;
                             }
 
@@ -551,6 +563,7 @@ namespace ComTransfer
                                         string message = PCOMM.GetTransferErrorMessage(result);
                                         TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                         AddLog("文件发送", "文件发送失败：" + message, shortname);
+                                        SendErrorReport(string.Format("文件{1}发送失败：{0}", message, shortname), filename);
                                     }
                                     else
                                     {
@@ -563,6 +576,7 @@ namespace ComTransfer
                                 {
                                     TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                     AddLog("文件发送", "文件发送失败：" + e.Message, shortname);
+                                    SendErrorReport(string.Format("文件{1}发送失败：{0}", e.Message, shortname), filename);
                                 }
                                 finally
                                 {
@@ -759,6 +773,19 @@ namespace ComTransfer
 
         private bool IsCommandBusy;
 
+        public void SendErrorReport(string message, string filename = null)
+        {
+            if (message==null || message.ToUpper().EndsWith(".APPCOMMAND"))
+            {
+                return;
+            }
+            if (filename != null && filename != LastFetchFile)
+            {
+                return;
+            }
+            SubmitCommand("errorreport", message);
+        }
+
         public void SubmitCommand(string command, string param)
         {
             if (command == null || command.Trim().Length == 0)
@@ -822,6 +849,7 @@ namespace ComTransfer
         }
 
         public string LastCommand;
+        private string LastFetchFile;
 
         private void ResolveCommand(string command)
         {
@@ -833,6 +861,7 @@ namespace ComTransfer
             else if (command.StartsWith("fetch"))
             {
                 string filename = command.Substring(5).Trim();
+                LastFetchFile = filename;
                 SendFile(filename);
             }
             else if (command.StartsWith("requestfile"))
@@ -921,7 +950,7 @@ namespace ComTransfer
                     }
                 }));
 
-                LogHelper.WriteLog("SYSTEM", log);
+                LogHelper.PushLog("SYSTEM", log);
             }
             catch
             {
@@ -949,7 +978,7 @@ namespace ComTransfer
                     }
                 }));
 
-                LogHelper.WriteLog("RECORD", record);
+                LogHelper.PushLog("RECORD", record);
             }
             catch
             {
