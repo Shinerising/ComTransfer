@@ -32,8 +32,17 @@ namespace ComTransfer
         private static NamedPipeClientStream stream;
         public static void Initialize()
         {
-            stream = new NamedPipeClientStream(".", PipelineName, PipeDirection.InOut, PipeOptions.Asynchronous);
             StartMonitoring();
+        }
+        private static void ResetClient()
+        {
+            if (stream != null)
+            {
+                stream.Dispose();
+            }
+
+            stream = new NamedPipeClientStream(".", PipelineName, PipeDirection.InOut, PipeOptions.Asynchronous);
+            stream.Connect();
         }
         public static void SendCommand(CommandType command, string data)
         {
@@ -47,11 +56,12 @@ namespace ComTransfer
             {
                 while (true)
                 {
-                    if (!stream.IsConnected)
+                    if (stream == null || !stream.IsConnected)
                     {
-                        stream.Connect();
+                        ResetClient();
                     }
-                    else if (stream.CanRead)
+                    
+                    if (stream.CanRead)
                     {
                         string message = ReadMessage();
                         ResolveMessage(message);
@@ -64,9 +74,34 @@ namespace ComTransfer
 
         private static void ResolveMessage(string message)
         {
-            if (!string.IsNullOrEmpty(message))
+            if (string.IsNullOrEmpty(message))
             {
-                Console.WriteLine(message);
+                return;
+            }
+
+            int offset = message.IndexOf(':');
+            if (offset == -1)
+            {
+                return;
+            }
+
+            string command = message.Substring(0, offset);
+            string data = message.Substring(offset + 1);
+
+            CommandType commandType = CommandType.Default;
+            try
+            {
+                commandType = (CommandType)Enum.Parse(typeof(CommandType), command);
+            }
+            catch
+            {
+
+            }
+
+            switch (commandType)
+            {
+                case CommandType.Default:
+                    break;
             }
         }
 
@@ -101,11 +136,9 @@ namespace ComTransfer
 
             try
             {
-                var writer = new StreamWriter(stream)
-                {
-                    AutoFlush = true
-                };
+                var writer = new StreamWriter(stream);
                 writer.WriteLine(message);
+                writer.Flush();
             }
             catch
             {
