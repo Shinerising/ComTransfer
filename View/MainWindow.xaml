@@ -233,7 +233,7 @@
                 </Border>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
                     <TextBlock Text="发送进度："/>
-                    <TextBlock Text="{Binding SendProgress}" Margin="4,0,0,0"/>
+                    <TextBlock Text="{Binding SendProgress}"/>
                     <TextBlock Text="剩余时间：" Margin="8,0,0,0"/>
                     <TextBlock Text="{Binding SendTimeText}"/>
                 </StackPanel>

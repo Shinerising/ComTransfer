@@ -57,6 +57,7 @@ namespace ComTransfer
         public double SendPercent => SendMax == 0 ? 0 : (double)SendCount / SendMax;
         public double SendTime => SendMax == 0 || SendMax <= SendCount ? 0 : (double)(SendMax - SendCount) / BaudRate * 8 * 1.7;
         public string SendTimeText => SendTime > 60 ? string.Format("{0:0}分钟{1:0}秒", SendTime / 60, (int)SendTime % 60) : string.Format("{0:0}秒", SendTime);
+        public int SizeLimit = 50;
 
         public void SetPort()
         {
@@ -162,6 +163,8 @@ namespace ComTransfer
 
         public bool InitialPort()
         {
+            SizeLimit = int.Parse(ConfigurationManager.AppSettings["maxsize"] ?? "50");
+
             PortID = int.Parse(ConfigurationManager.AppSettings["com"]);
             BaudRate = int.Parse(ConfigurationManager.AppSettings["baudrate"]);
             DataBits = int.Parse(ConfigurationManager.AppSettings["databits"]);
@@ -496,7 +499,7 @@ namespace ComTransfer
                                     AddLog("文件发送", "文件不存在", shortname);
                                     filename = null;
                                 }
-                                if (fileInfo.Length >= 1024 * 1024 * 20)
+                                if (fileInfo.Length >= 1024 * 1024 * SizeLimit)
                                 {
                                     TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, false));
                                     AddLog("文件发送", "文件体积超过限制", shortname);
@@ -754,6 +757,8 @@ namespace ComTransfer
             }
         }
 
+        private bool IsCommandBusy;
+
         public void SubmitCommand(string command, string param)
         {
             if (command == null || command.Trim().Length == 0)
@@ -765,7 +770,35 @@ namespace ComTransfer
                 return;
             }
 
-            AddLog("命令发送", "发送程序操作命令" );
+            if (IsCommandBusy)
+            {
+                return;
+            }
+
+            IsCommandBusy = true;
+
+            string commandType;
+
+            switch (command)
+            {
+                case "requestfile":
+                    commandType = "查询文件目录";
+                    break;
+                case "responsefile":
+                    commandType = "发送文件目录";
+                    break;
+                case "fetch":
+                    commandType = "拉取文件";
+                    break;
+                case "errorreport":
+                    commandType = "错误报告";
+                    break;
+                default:
+                    commandType = "未知";
+                    break;
+            }
+
+            AddLog("命令发送", string.Format("向远程发送 {0} 操作命令", commandType) );
 
             try
             {
@@ -784,6 +817,8 @@ namespace ComTransfer
             {
                 AddLog("命令发送", "命令发送失败：" + e.Message);
             }
+
+            IsCommandBusy = false;
         }
 
         public string LastCommand;
@@ -802,8 +837,13 @@ namespace ComTransfer
             }
             else if (command.StartsWith("requestfile"))
             {
-                string root = command.Substring(11);
+                string root = command.Substring(11).Trim();
                 Task.Factory.StartNew(() => SubmitCommand("responsefile", GetFileTreeText(root)));
+            }
+            else if (command.StartsWith("errorreport"))
+            {
+                string message = command.Substring(11).Trim();
+                AddLog("远程错误", message);
             }
         }
 
@@ -899,7 +939,7 @@ namespace ComTransfer
 
             try
             {
-                Application.Current.Dispatcher.Invoke((Action)(() =>
+                Application.Current.Dispatcher?.Invoke((Action)(() =>
                 {
                     RecordList.Add(record);
 

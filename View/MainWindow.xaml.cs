@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -72,20 +74,54 @@ namespace ComTransfer
 
         private void Button_Pull_Click(object sender, RoutedEventArgs e)
         {
-            port.SubmitCommand("fetch", port.PullFilePath);
-        }
+            Button button = sender as Button;
 
-        private void Button_Push_Click(object sender, RoutedEventArgs e)
-        {
-            if (port.IsReceiving)
+            if (port.IsReceiving && port.IsSending)
             {
-                MessageBoxResult result = MessageBox.Show("发送文件会中断当前的文件接收任务，是否确定发送？", "操作提示", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                MessageBoxResult result = MessageBox.Show("拉取文件可能会中断当前的文件传输任务，是否确定拉取操作？", "操作提示", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                 if (result != MessageBoxResult.OK)
                 {
                     return;
                 }
             }
+
+            button.IsEnabled = false;
+
+            port.SubmitCommand("fetch", port.PullFilePath);
+
+            Task.Factory.StartNew(() => {
+                Thread.Sleep(3000);
+                Application.Current.Dispatcher?.Invoke((Action)(() =>
+                {
+                    button.IsEnabled = true;
+                }));
+            });
+        }
+
+        private void Button_Push_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+
+            if (port.IsReceiving && port.IsSending)
+            {
+                MessageBoxResult result = MessageBox.Show("发送文件可能会中断当前的文件传输任务，是否确定发送操作？", "操作提示", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                if (result != MessageBoxResult.OK)
+                {
+                    return;
+                }
+            }
+
+            button.IsEnabled = false;
+
             port.SendFile(port.SelectedFilePath);
+
+            Task.Factory.StartNew(() => {
+                Thread.Sleep(3000);
+                Application.Current.Dispatcher?.Invoke((Action)(() =>
+                {
+                    button.IsEnabled = true;
+                }));
+            });
         }
 
         private void Button_Select_Click(object sender, RoutedEventArgs e)
