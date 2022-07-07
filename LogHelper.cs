@@ -57,15 +57,7 @@ namespace ComTransfer
             }
         }
 
-        public static void WriteLog(string name, string text)
-        {
-            Task.Run(async () =>
-            {
-                await WriteLogAsync(name, text);
-            });
-        }
-
-        public static async Task<bool> WriteLogAsync(string name, string text)
+        public static bool WriteLog(string name, string text)
         {
             if (name + text == lastMessage)
             {
@@ -109,7 +101,7 @@ namespace ComTransfer
             if (currentTime.Date != lastSaveTime.Date)
             {
                 //当天第一次写入时删除过期日志
-                await DeleteExpiredLogs();
+                DeleteExpiredLogs();
             }
             lastSaveTime = currentTime;
 
@@ -128,7 +120,7 @@ namespace ComTransfer
                 }
                 using (StreamWriter sw = new StreamWriter(path, true, Encoding.UTF8))
                 {
-                    await sw.WriteLineAsync(log);
+                    sw.WriteLine(log);
                 }
                 return true;
             }
@@ -151,30 +143,27 @@ namespace ComTransfer
         /// 删除过期日志
         /// </summary>
         /// <returns>是否删除成功</returns>
-        public static async Task<bool> DeleteExpiredLogs()
+        public static bool DeleteExpiredLogs()
         {
-            return await Task.Run(() =>
+            DateTime expireTime = DateTime.Now - TimeSpan.FromDays(expiredDays);
+            try
             {
-                DateTime expireTime = DateTime.Now - TimeSpan.FromDays(expiredDays);
-                try
+                foreach (string folder in FolderList)
                 {
-                    foreach (string folder in FolderList)
+                    foreach (string file in Directory.GetFiles(GetFolder(folder), "*.log"))
                     {
-                        foreach (string file in Directory.GetFiles(GetFolder(folder), "*.log"))
+                        if (File.GetCreationTime(file) < expireTime)
                         {
-                            if (File.GetCreationTime(file) < expireTime)
-                            {
-                                File.Delete(file);
-                            }
+                            File.Delete(file);
                         }
                     }
-                    return true;
                 }
-                catch
-                {
-                    return false;
-                }
-            });
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
