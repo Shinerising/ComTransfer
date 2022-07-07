@@ -74,6 +74,11 @@ namespace ComTransfer
 
         private void Button_Pull_Click(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrEmpty(port.PullFilePath))
+            {
+                return;
+            }
+
             Button button = sender as Button;
 
             if (port.IsReceiving && port.IsSending)
@@ -100,6 +105,11 @@ namespace ComTransfer
 
         private void Button_Push_Click(object sender, RoutedEventArgs e)
         {
+            if (string.IsNullOrEmpty(port.SelectedFilePath))
+            {
+                return;
+            }
+
             Button button = sender as Button;
 
             if (port.IsReceiving && port.IsSending)
