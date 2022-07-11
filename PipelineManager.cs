@@ -27,12 +27,14 @@ namespace ComTransfer
             FilePullRequest,
             FilePullResponse,
             FileSended,
-            FileReceived
+            FileReceived,
+            FolderList
         }
         public const string PipelineName = "PIPE_COMTRANSFER";
         public static bool IsConnected => stream != null && stream.IsConnected;
         private static NamedPipeClientStream stream;
         private static StreamWriter writer = null;
+        private static StreamReader reader = null;
         private static readonly Queue<string> MessageQueue = new Queue<string>();
         private static MainWindow mainWindow;
         private static ComPort comPort;
@@ -49,6 +51,7 @@ namespace ComTransfer
 
             stream = new NamedPipeClientStream(".", PipelineName, PipeDirection.InOut, PipeOptions.Asynchronous);
             stream.Connect();
+            reader = new StreamReader(stream);
             writer = new StreamWriter(stream) { AutoFlush = true };
         }
         public static void SendCommand(CommandType command, string data)
@@ -72,14 +75,18 @@ namespace ComTransfer
                     {
                         ResetClient();
                     }
-                    
-                    if (stream.CanRead)
+
+                    SendCommand(CommandType.FolderList, string.Join("|", comPort.PortOption));
+
+                    if (stream.CanRead && !reader.EndOfStream)
                     {
-                        string message = ReadMessage();
+                        string message = reader.ReadLine();
                         ResolveMessage(message);
                     }
-
-                    Thread.Sleep(100);
+                    else
+                    {
+                        Thread.Sleep(100);
+                    }
                 }
             }, TaskCreationOptions.LongRunning);
 
@@ -181,30 +188,13 @@ namespace ComTransfer
             }
         }
 
-        public static string ReadMessage()
-        {
-            if (stream == null || !stream.IsConnected)
-            {
-                return null;
-            }
-            try
-            {
-                var reader = new StreamReader(stream);
-                if (reader.EndOfStream)
-                {
-                    return string.Empty;
-                }
-                string message = reader.ReadLine();
-                return message;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         public static void WriteMessage(string message)
         {
+            if (!IsConnected)
+            {
+                return;
+            }
+
             MessageQueue.Enqueue(message);
 
             while (MessageQueue.Count > 256)

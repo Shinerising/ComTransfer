@@ -310,5 +310,15 @@ namespace ComTransfer
 
             }
         }
+
+        private void Border_StopSending_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            port.ForceStopSending();
+        }
+
+        private void Border_StopReceiving_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            port.ForceStopReceiving();
+        }
     }
 }

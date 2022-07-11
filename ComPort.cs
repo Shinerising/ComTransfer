@@ -151,8 +151,8 @@ namespace ComTransfer
                 }
             }
 
-            //PCOMM.sio_SetReadTimeouts(port, 60000, 100);
-            //PCOMM.sio_SetWriteTimeouts(port, 60000);
+            //PCOMM.sio_SetReadTimeouts(port, 6000, 1000);
+            //PCOMM.sio_SetWriteTimeouts(port, 6000);
 
             if ((result = PCOMM.sio_flush(port, 2)) != PCOMM.SIO_OK)
             {
@@ -179,6 +179,8 @@ namespace ComTransfer
             InitialDirectory();
 
             InitialWorkingDirectory();
+
+            PipelineManager.SendCommand(PipelineManager.CommandType.FolderList, string.Join("|", PortOption));
 
             Notify(new { PortInfo, PortOption });
 
@@ -630,6 +632,18 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning);
         }
 
+        private bool IsForceStopSending;
+        private bool IsForceStopReceiving;
+
+        public void ForceStopSending()
+        {
+            IsForceStopSending = true;
+        }
+
+        public void ForceStopReceiving()
+        {
+            IsForceStopReceiving = true;
+        }
 
         public delegate int xCallBack(int xmitlen, int buflen, byte[] buf, int flen);
         public delegate int rCallBack(int recvlen, int buflen, byte[] buf, int flen);
@@ -641,7 +655,7 @@ namespace ComTransfer
                 return -1;
             }
 
-            if (IsStarted)
+            if (IsStarted && !IsForceStopReceiving)
             {
                 if (ReceiveCount == 0 && recvlen != 0)
                 {
@@ -667,6 +681,8 @@ namespace ComTransfer
             }
             else
             {
+                IsForceStopReceiving = false;
+
                 ReceiveCount = 0;
                 ReceiveMax = 0;
 
@@ -678,7 +694,7 @@ namespace ComTransfer
 
         private int SendCallback(int xmitlen, int buflen, byte[] buf, int flen)
         {
-            if (IsStarted)
+            if (IsStarted && !IsForceStopSending)
             {
                 SendCount = xmitlen;
                 SendMax = flen;
@@ -694,6 +710,8 @@ namespace ComTransfer
             }
             else
             {
+                IsForceStopSending = false;
+
                 SendCount = 0;
                 SendMax = 0;
 
