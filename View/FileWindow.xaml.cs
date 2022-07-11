@@ -227,7 +227,7 @@ namespace ComTransfer
                         int tail = option.IndexOf(']', offset);
                         if (head != -1 && tail != -1 && tail > head)
                         {
-                            ModifiedTime = DateTime.Parse(option.Substring(head + 1, tail - head - 1));
+                            ModifiedTime = DateTime.Parse(option.Substring(head + 1, tail - head - 1)).ToLocalTime();
                             offset = tail + 1;
                         }
                     }

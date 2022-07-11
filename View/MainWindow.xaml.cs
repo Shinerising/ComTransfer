@@ -46,7 +46,7 @@ namespace ComTransfer
         {
             if (ConfigurationManager.AppSettings["usepipe"]?.ToUpper() == "TRUE")
             {
-                PipelineManager.Initialize(this);
+                PipelineManager.Initialize(this, port);
             }
         }
 

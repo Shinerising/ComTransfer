@@ -213,8 +213,13 @@ namespace ComTransfer
                 directoryDict.Add("*", DefaultDirectory);
             }
         }
-        public string GetDirectory(string extension)
+        public string GetDirectory(string extension, string filename)
         {
+            string path = GetLocation(filename);
+            if (path != null)
+            {
+                return path;
+            }
             if (extension == null)
             {
                 return DefaultDirectory;
@@ -320,6 +325,7 @@ namespace ComTransfer
         public bool IsSending { get; private set; }
         public bool IsReceiveWaiting { get; private set; }
         public bool IsReceiving { get; private set; }
+        public string CurrentSendingFile { get; private set; }
 
         public ComPort()
         {
@@ -429,7 +435,7 @@ namespace ComTransfer
                                     {
                                         string currentFileName = fileInfo.FullName;
                                         string outputFileName = fileInfo.Name.Remove(fileInfo.Name.Length - fileInfo.Extension.Length);
-                                        targetname = Path.Combine(GetDirectory(new FileInfo(outputFileName).Extension), fileInfo.Name.Remove(fileInfo.Name.Length - fileInfo.Extension.Length));
+                                        targetname = Path.Combine(GetDirectory(new FileInfo(outputFileName).Extension, outputFileName), fileInfo.Name.Remove(fileInfo.Name.Length - fileInfo.Extension.Length));
 
                                         using (FileStream decompressedFileStream = File.Create(targetname))
                                         {
@@ -456,13 +462,14 @@ namespace ComTransfer
                                 else
                                 {
                                     AddLog("文件接收", "正在拷贝文件", shortname);
-                                    targetname = Path.Combine(GetDirectory(fileInfo.Extension), filename);
+                                    targetname = Path.Combine(GetDirectory(fileInfo.Extension, shortname), filename);
                                     File.Copy(filename, targetname, true);
                                 }
 
                                 File.Delete(filename);
 
                                 AddLog("文件接收", "文件接收成功", shortname);
+                                PipelineManager.SendCommand(PipelineManager.CommandType.FileReceived, targetname);
                                 AddTransferRecord(false, targetname);
 
                                 ReceiveHandler?.BeginInvoke(this, new FileSystemEventArgs(WatcherChangeTypes.Created, "", ""), null, null);
@@ -500,6 +507,7 @@ namespace ComTransfer
                             {
                                 FileInfo fileInfo = new FileInfo(filename);
                                 shortname = fileInfo.Name;
+                                CurrentSendingFile = shortname;
                                 AddLog("文件发送", "检查文件属性", shortname);
                                 if (!fileInfo.Exists)
                                 {
@@ -540,6 +548,7 @@ namespace ComTransfer
                                 AddLog("文件发送", "文件处理失败:" + e.Message, shortname);
                                 SendErrorReport(string.Format("文件{1}处理失败：{0}", e.Message, shortname), filename);
                                 filename = null;
+                                CurrentSendingFile = null;
                             }
 
                             if (filename != null)
@@ -567,6 +576,7 @@ namespace ComTransfer
                                     else
                                     {
                                         TaskManager.Instance.FileSendedTaskHandler?.Invoke(this, new TaskManager.FileTaskEventArgs(filename, true));
+                                        PipelineManager.SendCommand(PipelineManager.CommandType.FileSended, sourcename);
                                         AddLog("文件发送", "文件发送成功", shortname);
                                         AddTransferRecord(true, sourcename);
                                     }
@@ -580,6 +590,7 @@ namespace ComTransfer
                                 finally
                                 {
                                     IsSending = false;
+                                    CurrentSendingFile = null;
 
                                     File.Delete(filename);
                                     if (tempFolder != null)
@@ -648,6 +659,8 @@ namespace ComTransfer
                 ReceiveCount = recvlen;
                 ReceiveMax = flen;
 
+                PipelineManager.SendCommand(PipelineManager.CommandType.DownloadProgress, string.Format("{0}/{1}", recvlen, flen));
+
                 Notify(new { ReceiveCount, ReceiveMax, ReceiveProgress, ReceivePercent, ReceiveTimeText });
 
                 return 0;
@@ -669,6 +682,11 @@ namespace ComTransfer
             {
                 SendCount = xmitlen;
                 SendMax = flen;
+
+                if (!CurrentSendingFile.ToUpper().EndsWith(".APPCOMMAND"))
+                {
+                    PipelineManager.SendCommand(PipelineManager.CommandType.UploadProgress, string.Format("{0}/{1}", xmitlen, flen));
+                }
 
                 Notify(new { SendCount, SendMax, SendProgress, SendPercent, SendTimeText });
 
@@ -816,6 +834,9 @@ namespace ComTransfer
                 case "fetch":
                     commandType = "拉取文件";
                     break;
+                case "setlocation":
+                    commandType = "推送文件";
+                    break;
                 case "errorreport":
                     commandType = "错误报告";
                     break;
@@ -847,6 +868,28 @@ namespace ComTransfer
 
         public string LastCommand;
         private string LastFetchFile;
+        private string setLocation;
+        private DateTime setLocationTime;
+
+        public string GetLocation(string filename)
+        {
+            if (setLocation == null || filename == null || DateTime.Now - setLocationTime > TimeSpan.FromMinutes(20) || !setLocation.EndsWith(filename))
+            {
+                return null;
+            }
+            return setLocation.Substring(0, setLocation.Length - filename.Length);
+        }
+
+        public void SetLocation(string path)
+        {
+            setLocation = path;
+            setLocationTime = DateTime.Now;
+        }
+
+        public void ClearLocation()
+        {
+            setLocation = null;
+        }
 
         private void ResolveCommand(string command)
         {
@@ -870,6 +913,10 @@ namespace ComTransfer
             {
                 string result = command.Substring(12).Trim();
                 PipelineManager.SendCommand(PipelineManager.CommandType.FileTreeResponse, result);
+            }
+            else if (command.StartsWith("setlocation"))
+            {
+                SetLocation(command.Substring(11).Trim());
             }
             else if (command.StartsWith("errorreport"))
             {
@@ -1093,10 +1140,12 @@ namespace ComTransfer
 
             }
         }
+
         public void ClearLog()
         {
             LogList.Clear();
         }
+
         public void ClearRecord()
         {
             RecordList.Clear();

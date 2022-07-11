@@ -25,7 +25,9 @@ namespace ComTransfer
             FilePushRequest,
             FilePushResponse,
             FilePullRequest,
-            FilePullResponse
+            FilePullResponse,
+            FileSended,
+            FileReceived
         }
         public const string PipelineName = "PIPE_COMTRANSFER";
         public static bool IsConnected => stream != null && stream.IsConnected;
@@ -33,9 +35,11 @@ namespace ComTransfer
         private static StreamWriter writer = null;
         private static readonly Queue<string> MessageQueue = new Queue<string>();
         private static MainWindow mainWindow;
-        public static void Initialize(MainWindow window)
+        private static ComPort comPort;
+        public static void Initialize(MainWindow window, ComPort port)
         {
             mainWindow = window;
+            comPort = port;
 
             StartMonitoring();
         }
@@ -49,6 +53,11 @@ namespace ComTransfer
         }
         public static void SendCommand(CommandType command, string data)
         {
+            if (data != null && data.ToUpper().EndsWith(".APPCOMMAND"))
+            {
+                return;
+            }
+
             string text = string.Format("{0}:{1}", command, data);
             WriteMessage(text);
         }
@@ -132,6 +141,42 @@ namespace ComTransfer
                     break;
                 case CommandType.FileTreeRequest:
                     mainWindow.SubmitCommand("requestfile", data);
+                    break;
+                case CommandType.FilePushRequest:
+                    if (!string.IsNullOrEmpty(data) && data.IndexOf('>') != -1)
+                    {
+                        int index = data.IndexOf('>');
+                        string localPath = data.Substring(0, index);
+                        string remotePath = data.Substring(index + 1);
+                        try
+                        {
+                            comPort.SubmitCommand("setlocation", Path.Combine(remotePath, new FileInfo(localPath).Name));
+                            comPort.SendFile(localPath);
+                            SendCommand(CommandType.FilePushResponse, "");
+                        }
+                        catch
+                        {
+
+                        }
+                    }
+                    break;
+                case CommandType.FilePullRequest:
+                    if (!string.IsNullOrEmpty(data) && data.IndexOf('>') != -1)
+                    {
+                        int index = data.IndexOf('>');
+                        string remotePath = data.Substring(0, index);
+                        string localPath = data.Substring(index + 1);
+                        try
+                        {
+                            comPort.SetLocation(Path.Combine(localPath, new FileInfo(remotePath).Name));
+                            comPort.SubmitCommand("fetch", remotePath);
+                            SendCommand(CommandType.FilePullResponse, "");
+                        }
+                        catch
+                        {
+
+                        }
+                    }
                     break;
             }
         }
