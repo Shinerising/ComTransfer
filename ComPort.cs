@@ -895,7 +895,9 @@ namespace ComTransfer
             {
                 return null;
             }
-            return setLocation.Substring(0, setLocation.Length - filename.Length);
+            string location = setLocation;
+            ClearLocation();
+            return location.Substring(0, location.Length - filename.Length);
         }
 
         public void SetLocation(string path)
