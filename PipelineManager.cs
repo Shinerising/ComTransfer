@@ -32,8 +32,11 @@ namespace ComTransfer
         private static NamedPipeClientStream stream;
         private static StreamWriter writer = null;
         private static readonly Queue<string> MessageQueue = new Queue<string>();
-        public static void Initialize()
+        private static MainWindow mainWindow;
+        public static void Initialize(MainWindow window)
         {
+            mainWindow = window;
+
             StartMonitoring();
         }
         private static void ResetClient()
@@ -75,18 +78,23 @@ namespace ComTransfer
             {
                 while (true)
                 {
-                    if (stream == null || !stream.IsConnected)
+                    if (stream != null && stream.IsConnected && stream.CanWrite)
                     {
-                        return;
-                    }
+                        while (MessageQueue.Count > 0)
+                        {
+                            try
+                            {
+                                string message = MessageQueue.Dequeue();
+                                writer.WriteLine(message);
+                                stream.WaitForPipeDrain();
+                            }
+                            catch
+                            {
 
-                    if (stream.CanWrite && MessageQueue.Count > 0)
-                    {
-                        string message = MessageQueue.Dequeue();
-                        writer.WriteLine(message);
-                        stream.WaitForPipeDrain();
+                            }
+                        }
                     }
-
+                    
                     Thread.Sleep(100);
                 }
             }, TaskCreationOptions.LongRunning);
@@ -121,6 +129,9 @@ namespace ComTransfer
             switch (commandType)
             {
                 case CommandType.Default:
+                    break;
+                case CommandType.FileTreeRequest:
+                    mainWindow.SubmitCommand("requestfile", data);
                     break;
             }
         }

@@ -116,8 +116,9 @@ namespace ComTransfer
                     if (window.LastCommand.StartsWith("responsefile"))
                     {
                         string result = window.LastCommand.Substring(12).Trim();
-                        list = result.Split('|').Where(option => option.Length != 0).Select(option => new FileNode(option, root)).ToList();
-                        
+                        int offset = result.IndexOf('|');
+                        string filetree = offset != -1 ? result.Substring(offset + 1) : result;
+                        list = filetree.Split('|').Where(option => option.Length != 0).Select(option => new FileNode(option, root)).ToList();
                     }
                 }
 
@@ -176,8 +177,18 @@ namespace ComTransfer
             {
                 if (option.StartsWith("D>"))
                 {
+                    int offset = 2;
+                    {
+                        int head = option.IndexOf('[', offset);
+                        int tail = option.IndexOf(']', offset);
+                        if (head != -1 && tail != -1 && tail > head)
+                        {
+                            Length = long.Parse(option.Substring(head + 1, tail - head - 1));
+                            offset = tail + 1;
+                        }
+                    }
                     IsDisk = true;
-                    FileName = option.Substring(2);
+                    FileName = option.Substring(offset);
                     FullName = FileName;
                     FileList = new List<FileNode>();
                 }

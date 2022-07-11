@@ -866,6 +866,11 @@ namespace ComTransfer
                 string root = command.Substring(11).Trim();
                 Task.Factory.StartNew(() => SubmitCommand("responsefile", GetFileTreeText(root)));
             }
+            else if (command.StartsWith("responsefile"))
+            {
+                string result = command.Substring(12).Trim();
+                PipelineManager.SendCommand(PipelineManager.CommandType.FileTreeResponse, result);
+            }
             else if (command.StartsWith("errorreport"))
             {
                 string message = command.Substring(11).Trim();
@@ -963,12 +968,12 @@ namespace ComTransfer
             {
                 if (root == null || root.Trim() == "")
                 {
-                    return string.Join("|", DriveInfo.GetDrives().Select(item => "D>" + item));
+                    return "|" + string.Join("|", DriveInfo.GetDrives().Select(item => string.Format("D>[{0}]{1}", item.IsReady ? item.TotalSize : 0, item.Name)));
                 }
                 int count = 0;
                 int rootLength = root.Length;
-                StringBuilder stringBuilder = new StringBuilder();
-                foreach (string entry in Directory.EnumerateFileSystemEntries(root))
+                StringBuilder stringBuilder = new StringBuilder(root + "|");
+                foreach (string entry in Directory.EnumerateDirectories(root))
                 {
                     FileInfo info = new FileInfo(entry);
 
@@ -976,26 +981,37 @@ namespace ComTransfer
                     {
                         continue;
                     }
-                    else if (info.Attributes.HasFlag(FileAttributes.Directory))
+
+                    stringBuilder.Append("F>");
+                    stringBuilder.Append("[");
+                    stringBuilder.Append(info.LastWriteTimeUtc);
+                    stringBuilder.Append("]");
+                    stringBuilder.Append(entry.Substring(rootLength).TrimStart('\\'));
+                    stringBuilder.Append("|");
+
+                    count += 1;
+                    if (count >= 1000)
                     {
-                        stringBuilder.Append("F>");
-                        stringBuilder.Append("[");
-                        stringBuilder.Append(info.LastWriteTimeUtc);
-                        stringBuilder.Append("]");
-                        stringBuilder.Append(entry.Substring(rootLength).TrimStart('\\'));
-                        stringBuilder.Append("|");
+                        break;
                     }
-                    else
+                }
+                foreach (string entry in Directory.EnumerateFiles(root))
+                {
+                    FileInfo info = new FileInfo(entry);
+
+                    if (info.Attributes.HasFlag(FileAttributes.Hidden))
                     {
-                        stringBuilder.Append("[");
-                        stringBuilder.Append(info.Length);
-                        stringBuilder.Append("]");
-                        stringBuilder.Append("[");
-                        stringBuilder.Append(info.LastWriteTimeUtc);
-                        stringBuilder.Append("]");
-                        stringBuilder.Append(entry.Substring(rootLength).TrimStart('\\'));
-                        stringBuilder.Append("|");
+                        continue;
                     }
+
+                    stringBuilder.Append("[");
+                    stringBuilder.Append(info.Length);
+                    stringBuilder.Append("]");
+                    stringBuilder.Append("[");
+                    stringBuilder.Append(info.LastWriteTimeUtc);
+                    stringBuilder.Append("]");
+                    stringBuilder.Append(entry.Substring(rootLength).TrimStart('\\'));
+                    stringBuilder.Append("|");
 
                     count += 1;
                     if (count >= 1000)
@@ -1041,6 +1057,8 @@ namespace ComTransfer
                 }));
 
                 LogHelper.PushLog("SYSTEM", log);
+
+                PipelineManager.SendCommand(PipelineManager.CommandType.WorkingLog, message);
             }
             catch
             {
