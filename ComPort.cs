@@ -1102,6 +1102,26 @@ namespace ComTransfer
         public ObservableCollection<string> LogList { get; set; } = new ObservableCollection<string>();
         private const int RecordLimit = 100;
         public ObservableCollection<string> RecordList { get; set; } = new ObservableCollection<string>();
+        
+        public void AddSimpleLog(string message)
+        {
+            try
+            {
+                Application.Current.Dispatcher?.Invoke((Action)(() =>
+                {
+                    LogList.Add(message);
+
+                    while (LogList.Count > LogLimit)
+                    {
+                        LogList.RemoveAt(0);
+                    }
+                }));
+            }
+            catch
+            {
+
+            }
+        }
 
         public void AddLog(string brief, string message, string filename = null)
         {
@@ -1117,7 +1137,7 @@ namespace ComTransfer
 
             try
             {
-                Application.Current.Dispatcher.Invoke((Action)(() =>
+                Application.Current.Dispatcher?.Invoke((Action)(() =>
                 {
                     LogList.Add(log);
 
