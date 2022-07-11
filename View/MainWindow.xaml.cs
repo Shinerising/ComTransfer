@@ -77,7 +77,7 @@ namespace ComTransfer
 
             foreach (string log in text.Split('\n'))
             {
-                port.AddLog("", log);
+                port.AddSimpleLog(log);
             }
 
         }
