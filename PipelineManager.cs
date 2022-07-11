@@ -30,19 +30,19 @@ namespace ComTransfer
         public const string PipelineName = "PIPE_COMTRANSFER";
         public static bool IsConnected => stream != null && stream.IsConnected;
         private static NamedPipeClientStream stream;
+        private static StreamWriter writer = null;
+        private static readonly Queue<string> MessageQueue = new Queue<string>();
         public static void Initialize()
         {
             StartMonitoring();
         }
         private static void ResetClient()
         {
-            if (stream != null)
-            {
-                stream.Dispose();
-            }
+            stream?.Dispose();
 
             stream = new NamedPipeClientStream(".", PipelineName, PipeDirection.InOut, PipeOptions.Asynchronous);
             stream.Connect();
+            writer = new StreamWriter(stream) { AutoFlush = true };
         }
         public static void SendCommand(CommandType command, string data)
         {
@@ -65,6 +65,26 @@ namespace ComTransfer
                     {
                         string message = ReadMessage();
                         ResolveMessage(message);
+                    }
+
+                    Thread.Sleep(100);
+                }
+            }, TaskCreationOptions.LongRunning);
+
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    if (stream == null || !stream.IsConnected)
+                    {
+                        return;
+                    }
+
+                    if (stream.CanWrite && MessageQueue.Count > 0)
+                    {
+                        string message = MessageQueue.Dequeue();
+                        writer.WriteLine(message);
+                        stream.WaitForPipeDrain();
                     }
 
                     Thread.Sleep(100);
@@ -129,20 +149,11 @@ namespace ComTransfer
 
         public static void WriteMessage(string message)
         {
-            if (stream == null || !stream.IsConnected)
-            {
-                return;
-            }
+            MessageQueue.Enqueue(message);
 
-            try
+            while (MessageQueue.Count > 256)
             {
-                var writer = new StreamWriter(stream);
-                writer.WriteLine(message);
-                writer.Flush();
-            }
-            catch
-            {
-
+                MessageQueue.Dequeue();
             }
         }
     }
