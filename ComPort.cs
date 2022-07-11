@@ -882,6 +882,10 @@ namespace ComTransfer
 
         public void SetLocation(string path)
         {
+            if (path.StartsWith("[") && path.Contains(@"]"))
+            {
+                return;
+            }
             setLocation = path;
             setLocationTime = DateTime.Now;
         }
