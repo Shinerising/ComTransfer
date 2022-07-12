@@ -28,7 +28,9 @@ namespace ComTransfer
             FilePullResponse,
             FileSended,
             FileReceived,
-            FolderList
+            FolderList,
+            StopSend,
+            StopReceive
         }
         public const string PipelineName = "PIPE_COMTRANSFER";
         public static bool IsConnected => stream != null && stream.IsConnected;
@@ -184,6 +186,12 @@ namespace ComTransfer
 
                         }
                     }
+                    break;
+                case CommandType.StopReceive:
+                    comPort.ForceStopReceiving();
+                    break;
+                case CommandType.StopSend:
+                    comPort.ForceStopSending();
                     break;
             }
         }

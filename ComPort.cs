@@ -1163,7 +1163,8 @@ namespace ComTransfer
             {
                 return;
             }
-            string record = string.Format("[{0}] {1}文件：{2}", DateTime.Now.ToString("MM-dd HH:mm:ss"), isSend ? "已发送" : "已接收", filename);
+            string message = string.Format("{0}文件：{1}", isSend ? "已发送" : "已接收", filename);
+            string record = string.Format("[{0}] {1}", DateTime.Now.ToString("MM-dd HH:mm:ss"), message);
 
             try
             {
@@ -1178,6 +1179,8 @@ namespace ComTransfer
                 }));
 
                 LogHelper.PushLog("RECORD", record);
+
+                PipelineManager.SendCommand(PipelineManager.CommandType.TransferLog, message);
             }
             catch
             {
