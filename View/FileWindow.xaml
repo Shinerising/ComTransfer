@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ComTransfer"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=local:FileWindow}"
-        Title="远端文件选择窗口" Width="320" Height="360" SizeToContent="Manual" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" MinWidth="240" MinHeight="240" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing">
+        Title="远程文件选择窗口" Width="320" Height="360" SizeToContent="Manual" WindowStartupLocation="CenterOwner" ShowInTaskbar="False" MinWidth="240" MinHeight="240" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing">
     <Window.Resources>
         <Style TargetType="StackPanel">
             <Setter Property="Margin" Value="2"/>

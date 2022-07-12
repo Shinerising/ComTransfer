@@ -50,6 +50,7 @@ namespace ComTransfer
             }
         }
 
+        #region ShowLog
         private void ShowSpecialLog()
         {
             string data = "nZW7btswFIb3PgU1aaGpZqXsPEHmLh20F548dJELMFURJE6MBIWDBr0EBWqgQ5aiCNAOlgLkUUQEHfkK/UmKust2S0gWRR6e75yfh7IUQv7jRSJKGRvl4up1Lq7xGI1UuiaUqPS3ypbP9vKhb0omWKg2l9y1kPvmGZUj4zGX4kKlQiapFMc7nBN3T6VYPZ3ccZlkCJBXTSY35qlDNq8ZHBMzpDabvWLHpV23G1x1xl6o7CzA02vYpftJhIVBsUZl77TE9mWOQKMmJV1HkedBn2EM6bs1wsUWHkVwrHtT8nh/OLECmXeVvvdnKjs5qOexbyokNnnM3SKVfaQThAoYIhYqO/cjmx8mn359eaUNVLboEXgPWn763eP4cawFXJ1Lcd0OaoqtWarsVmUfHu8x4If/wdP6cVMLIbyhT0DW4z6JcEqc8MmdPL6sFnkd0laU26ii6W7oYUEcEbW5JXrvC9u3a5TbkTsrxfIe2gCurArqk8rW6uI1yobO8tUNzhUu4mPg0BzjBydtD3F7OQYdHvcMx3xlyJjK5CsqRg/ha2H2ywqbDvJqwE7V01z8bJtrnh6nAASacIFBSBmbQJBfFfkbsg+1A+3bCM5jJA8k4wGMsLVM2zL+0h6NBXl+gM50uHJq0G6elX2zuqdBAAY3TFjNZLLJV1eAItHPjrWdOSjwQJ585kPE2HSDoqIZUQ/f0Gf6oC6Nxktd1CikZal4v85dsSvVhyIIsJ0M+p6VfH0xEzVjhcUnhpjIn9WP+a78h/h11f0anVhEccJ0n8EB9r6YMLky5nSMt50m2xhr4+u50zY7cDYoc2LXVxZ6Ym6DslbzHfw6vPmJqjrASpEUNgEJbW3X4mptsc1+F5mzRrWXuErtQB/i+jxjrpxD/V8mxSkpyzxJnVu6C83+Ag==";
@@ -79,8 +80,8 @@ namespace ComTransfer
             {
                 port.AddSimpleLog(log);
             }
-
         }
+        #endregion
 
         private void Button_Start_Click(object sender, RoutedEventArgs e)
         {

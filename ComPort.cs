@@ -737,24 +737,31 @@ namespace ComTransfer
 
             TaskManager.Instance.FileTaskHandler += FileTaskHandler;
 
-            if (receiveTask.Status != TaskStatus.Running)
+            try
             {
-                receiveTask.Start();
-            }
+                if (receiveTask.Status != TaskStatus.Running)
+                {
+                    receiveTask.Start();
+                }
 
-            if (sendTask.Status != TaskStatus.Running)
-            {
-                sendTask.Start();
-            }
+                if (sendTask.Status != TaskStatus.Running)
+                {
+                    sendTask.Start();
+                }
 
-            if (fileTask.Status != TaskStatus.Running)
-            {
-                fileTask.Start();
-            }
+                if (fileTask.Status != TaskStatus.Running)
+                {
+                    fileTask.Start();
+                }
 
-            if (statusTask.Status != TaskStatus.Running)
+                if (statusTask.Status != TaskStatus.Running)
+                {
+                    statusTask.Start();
+                }
+            }
+            catch (Exception e)
             {
-                statusTask.Start();
+                AddLog("程序故障", "线程启动失败：" + e.Message);
             }
         }
 
