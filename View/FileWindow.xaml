@@ -115,7 +115,7 @@
                                             <RowDefinition/>
                                         </Grid.RowDefinitions>
                                         <ToggleButton x:Name="Expander" Style="{StaticResource ExpandCollapseToggleStyle}" ClickMode="Press" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"/>
-                                        <Border x:Name="BD" Grid.Column="1" Margin="2,0" BorderThickness="1" Background="Transparent" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                                        <Border x:Name="BD" Grid.Column="1" Margin="2,0" BorderThickness="1" Background="Transparent" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True" ToolTip="{Binding ToolTip}">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="20"/>

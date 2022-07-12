@@ -155,6 +155,48 @@ namespace ComTransfer
         public string FullName { get; set; } = string.Empty;
         public DateTime ModifiedTime { get; set; }
         public long Length { get; set; }
+        public string ToolTip
+        {
+            get
+            {
+                if (IsRoot)
+                {
+                    return "远程计算机根目录";
+                }
+                if (IsDisk)
+                {
+                    return string.Format("名称：{1}{0}类型：静态磁盘{0}磁盘空间：{2}", Environment.NewLine, FileName, GetSizeString(Length));
+                }
+                if (IsDirectory)
+                {
+                    return string.Format("名称：{1}{0}类型：文件夹{0}修改时间：{2}", Environment.NewLine, FileName, ModifiedTime.ToString("yyyy-MM-dd HH:mm:ss"));
+                }
+                return string.Format("名称：{1}{0}类型：文件{0}文件大小：{2}{0}修改时间：{3}", Environment.NewLine, FileName, GetSizeString(Length), ModifiedTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            }
+        }
+        public static string GetSizeString(long size)
+        {
+            if (size == 0)
+            {
+                return "0 Byte";
+            }
+            else if (size < 1024)
+            {
+                return string.Format("{0} Bytes", size);
+            }
+            else if (size < 1024 * 1024)
+            {
+                return string.Format("{0:f1} KB", (double)size / 1024);
+            }
+            else if (size < 1024 * 1024 * 1024)
+            {
+                return string.Format("{0:f1} MB", (double)size / (1024 * 1024));
+            }
+            else
+            {
+                return string.Format("{0:f1} GB", (double)size / (1024 * 1024 * 1024));
+            }
+        }
         public bool IsDirectory { get; set; }
         public bool IsDisk { get; set; }
         public bool IsRoot { get; set; }
