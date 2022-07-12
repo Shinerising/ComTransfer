@@ -53,6 +53,10 @@ namespace ComTransfer
         {
             TreeViewItem item = sender as TreeViewItem;
             FileNode node = item.DataContext as FileNode;
+            if (sender != e.OriginalSource)
+            {
+                return;
+            }
             if (node == null)
             {
                 return;
@@ -77,6 +81,7 @@ namespace ComTransfer
             }
             if (node.IsFile)
             {
+                item.IsExpanded = false;
                 TextBox_Path.Text = Path;
                 DialogResult = true;
                 e.Handled = true;
