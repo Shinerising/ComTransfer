@@ -86,7 +86,7 @@ namespace ComTransfer
         private void Button_Start_Click(object sender, RoutedEventArgs e)
         {
             Button button = sender as Button;
-            button.IsEnabled = false;
+            button.IsEnabled = true;
 
             if (port.IsOpen)
             {
@@ -233,6 +233,7 @@ namespace ComTransfer
                 if (result != true)
                 {
                     e.Cancel = true;
+                    return;
                 }
             }
             port.Dispose();

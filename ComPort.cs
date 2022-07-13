@@ -151,8 +151,8 @@ namespace ComTransfer
                 }
             }
 
-            //PCOMM.sio_SetReadTimeouts(port, 6000, 1000);
-            //PCOMM.sio_SetWriteTimeouts(port, 6000);
+            PCOMM.sio_SetReadTimeouts(port, 60, 1000);
+            PCOMM.sio_SetWriteTimeouts(port, 60);
 
             if ((result = PCOMM.sio_flush(port, 2)) != PCOMM.SIO_OK)
             {
@@ -594,10 +594,17 @@ namespace ComTransfer
                                     IsSending = false;
                                     CurrentSendingFile = null;
 
-                                    File.Delete(filename);
-                                    if (tempFolder != null)
+                                    try
                                     {
-                                        Directory.Delete(tempFolder, true);
+                                        File.Delete(filename);
+                                        if (tempFolder != null)
+                                        {
+                                            Directory.Delete(tempFolder, true);
+                                        }
+                                    }
+                                    catch
+                                    {
+
                                     }
 
                                     SendCount = 0;
