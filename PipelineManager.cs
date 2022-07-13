@@ -188,10 +188,16 @@ namespace ComTransfer
                     }
                     break;
                 case CommandType.StopReceive:
-                    comPort.ForceStopReceiving();
+                    if (comPort.IsReceiving)
+                    {
+                        comPort.ForceStopReceiving();
+                    }
                     break;
                 case CommandType.StopSend:
-                    comPort.ForceStopSending();
+                    if (comPort.IsSending)
+                    {
+                        comPort.ForceStopSending();
+                    }
                     break;
             }
         }
