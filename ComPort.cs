@@ -151,8 +151,8 @@ namespace ComTransfer
                 }
             }
 
-            PCOMM.sio_SetReadTimeouts(port, 60, 1000);
-            PCOMM.sio_SetWriteTimeouts(port, 60);
+            //PCOMM.sio_SetReadTimeouts(port, 60000, 1000);
+            //PCOMM.sio_SetWriteTimeouts(port, 60000);
 
             if ((result = PCOMM.sio_flush(port, 2)) != PCOMM.SIO_OK)
             {
