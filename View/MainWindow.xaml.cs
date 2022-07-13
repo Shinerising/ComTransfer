@@ -136,7 +136,7 @@ namespace ComTransfer
 
             Button button = sender as Button;
 
-            if (port.IsReceiving && port.IsSending)
+            if (port.IsReceiving || port.IsSending)
             {
                 MessageBoxResult result = MessageBox.Show("拉取文件可能会中断当前的文件传输任务，是否确定拉取操作？", "操作提示", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                 if (result != MessageBoxResult.OK)
@@ -167,7 +167,7 @@ namespace ComTransfer
 
             Button button = sender as Button;
 
-            if (port.IsReceiving && port.IsSending)
+            if (port.IsReceiving || port.IsSending)
             {
                 MessageBoxResult result = MessageBox.Show("发送文件可能会中断当前的文件传输任务，是否确定发送操作？", "操作提示", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
                 if (result != MessageBoxResult.OK)
