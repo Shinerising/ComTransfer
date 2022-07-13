@@ -78,7 +78,7 @@ namespace ComTransfer
                         ResetClient();
                     }
 
-                    SendCommand(CommandType.FolderList, string.Join("|", comPort.PortOption));
+                    SendCommand(CommandType.FolderList, comPort.GetDirectoryInfo());
 
                     if (stream.CanRead && !reader.EndOfStream)
                     {

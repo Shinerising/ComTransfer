@@ -180,7 +180,7 @@ namespace ComTransfer
 
             InitialWorkingDirectory();
 
-            PipelineManager.SendCommand(PipelineManager.CommandType.FolderList, string.Join("|", PortOption));
+            PipelineManager.SendCommand(PipelineManager.CommandType.FolderList, GetDirectoryInfo());
 
             Notify(new { PortInfo, PortOption });
 
@@ -214,6 +214,10 @@ namespace ComTransfer
             {
                 directoryDict.Add("*", DefaultDirectory);
             }
+        }
+        public string GetDirectoryInfo()
+        {
+            return string.Join("|", directoryDict.Select(item => string.Format("{0}>{1}", item.Key, item.Value)));
         }
         public string GetDirectory(string extension, string filename)
         {
