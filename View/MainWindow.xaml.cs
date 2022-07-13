@@ -85,6 +85,9 @@ namespace ComTransfer
 
         private void Button_Start_Click(object sender, RoutedEventArgs e)
         {
+            Button button = sender as Button;
+            button.IsEnabled = false;
+
             if (port.IsOpen)
             {
                 port.ClosePort();
@@ -93,6 +96,14 @@ namespace ComTransfer
             {
                 port.OpenPort();
             }
+
+            Task.Factory.StartNew(() => {
+                Thread.Sleep(3000);
+                Application.Current.Dispatcher?.Invoke((Action)(() =>
+                {
+                    button.IsEnabled = true;
+                }));
+            });
         }
 
         private void Button_Option_Click(object sender, RoutedEventArgs e)
