@@ -97,11 +97,12 @@ jobs:
       with:
         type: "zip"
         path: "../_build"
-        filename: $env:Archive_Name
+        filename: $Archive_Name
 
     - name: Generate Release
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: false
-        files: $env:Archive_Name
+        automatic_release_tag: "latest"
+        files: $Archive_Name
