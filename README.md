@@ -1,5 +1,10 @@
 # 自动化串口文件传输工具说明文档
 
+[![.NET Core Desktop](https://github.com/Shinerising/ComTransfer/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/Shinerising/ComTransfer/actions/workflows/dotnet-desktop.yml)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Shinerising/ComTransfer/.NET%20Core%20Desktop)
+![GitHub Release Version](https://img.shields.io/github/v/release/Shinerising/Comtransfer)
+![Code Count](https://tokei.rs/b1/github/Shinerising/ComTransfer)
+
 ![](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows)
 ![](https://img.shields.io/badge/Visual%20Studio-5C2D91?style=for-the-badge&logo=visualstudio)
 ![](https://img.shields.io/badge/.NET%20Framework-512BD4?style=for-the-badge&logo=dotnet)
