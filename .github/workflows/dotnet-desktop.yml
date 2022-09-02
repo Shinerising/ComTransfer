@@ -90,7 +90,7 @@ jobs:
       run: nuget restore $env:Solution_Name
         
     - name: Build Solution
-      run: msbuild.exe $env:Solution_Name /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:PublishUrl="../_build"
+      run: msbuild.exe $env:Solution_Name /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:OutputPath="../_build"
       
     - name: Generate Release
       uses: "marvinpinto/action-automatic-releases@latest"
