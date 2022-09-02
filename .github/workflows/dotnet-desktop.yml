@@ -50,16 +50,15 @@ jobs:
 
     strategy:
       matrix:
-        configuration: [Debug, Release]
+        configuration: [Release]
 
-    runs-on: windows-latest  # For a list of available runner types, refer to
+    runs-on: windows-2019  # For a list of available runner types, refer to
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
     env:
-      Solution_Name: ComTransfer.sln                            # Replace with your solution name, i.e. MyWpfApp.sln.
-      Test_Project_Path: UnitTest\UnitTest.csproj               # Replace with the path to your test project, i.e. MyWpfApp.Tests\MyWpfApp.Tests.csproj.
-      Wap_Project_Directory: ComTransfer.Package                # Replace with the Wap project directory relative to the solution, i.e. MyWpfApp.Package.
-      Wap_Project_Path: your-wap-project-path                   # Replace with the path to your Wap project, i.e. MyWpf.App.Package\MyWpfApp.Package.wapproj.
+      Solution_Name: ComTransfer.sln
+      Project_Path: ComTransfer.csproj
+      Test_Project_Path: UnitTest\UnitTest.csproj
 
     steps:
     - name: Checkout
@@ -87,8 +86,11 @@ jobs:
       env:
         Configuration: ${{ matrix.configuration }}
         
+    - name: Restore Packages
+      run: nuget restore $env:Solution_Name
+        
     - name: Build Solution
-      run: msbuild.exe $env:Solution_Name /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:PublishUrl="../_build"
+      run: msbuild.exe $env:Project_Path /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:PublishUrl="../_build"
       
     - name: Generate Release
       uses: "marvinpinto/action-automatic-releases@latest"
