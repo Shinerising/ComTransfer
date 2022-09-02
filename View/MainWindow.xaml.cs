@@ -23,6 +23,8 @@ namespace ComTransfer
 
         public MainWindow()
         {
+            PCOMM.InitializeLibrary();
+
             port = new ComPort();
 
             DataContext = port;
