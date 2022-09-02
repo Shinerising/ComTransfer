@@ -2,7 +2,7 @@
 
 [![.NET Core Desktop](https://github.com/Shinerising/ComTransfer/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/Shinerising/ComTransfer/actions/workflows/dotnet-desktop.yml)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Shinerising/ComTransfer/.NET%20Core%20Desktop)
-![GitHub Release Version](https://img.shields.io/github/v/release/Shinerising/Comtransfer)
+[![GitHub Release Version](https://img.shields.io/github/v/release/Shinerising/Comtransfer)](https://github.com/Shinerising/ComTransfer/releases)
 ![Code Count](https://tokei.rs/b1/github/Shinerising/ComTransfer)
 
 ![](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows)
