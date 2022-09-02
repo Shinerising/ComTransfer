@@ -96,8 +96,8 @@ jobs:
       uses: thedoctor0/zip-release@main
       with:
         type: "zip"
-        path: "../_build"
-        filename: $Archive_Name
+        path: "../_build/*"
+        filename: ${{ env.Archive_Name }}
 
     - name: Generate Release
       uses: "marvinpinto/action-automatic-releases@latest"
@@ -105,4 +105,4 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         prerelease: false
         automatic_release_tag: "latest"
-        files: $Archive_Name
+        files: ${{ env.Archive_Name }}
