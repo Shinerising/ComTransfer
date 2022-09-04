@@ -55,10 +55,9 @@ jobs:
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
     env:
-      Solution_Name: ComTransfer.sln
-      Archive_Name: "../ComTransfer.zip"
-      Project_Path: ComTransfer.csproj
-      Test_Project_Path: UnitTest\UnitTest.csproj
+      Solution_Name: NIAS.sln
+      Archive_Name: '../NIAS.zip'
+      Project_Path: 'LanMonitor/LanMonitor.csproj'
 
     steps:
     - name: Checkout
@@ -91,7 +90,19 @@ jobs:
         
     - name: Build Solution
       run: msbuild.exe $env:Solution_Name /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../_build"
-      
+
+    # Sign Binaries
+    - name: Sign Binaries
+      uses: GabrielAcostaEngler/signtool-code-sign@main
+      with:
+        certificate: '${{ secrets.Base64_Encoded_PFX }}'
+        cert-password: '${{ secrets.PFX_KEY }}'
+        cert-sha1: '${{ secrets.PFX_SHA1 }}'
+        cert-description: 'foo'
+        folder: '../_build'
+        recursive: false
+        timestamp-server: 'http://timestamp.digicert.com'
+        
     - name: Archive Release
       uses: thedoctor0/zip-release@main
       with:
