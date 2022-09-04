@@ -1,5 +1,7 @@
 # 自动化串口文件传输工具说明文档
 
+一款支持计算机之间通过串口执行文件发送、文件拉取、自动化文件备份等操作的轻量级软件。
+
 [![.NET Build](https://github.com/Shinerising/ComTransfer/actions/workflows/dotnet-build.yml/badge.svg)](https://github.com/Shinerising/ComTransfer/actions/workflows/dotnet-build.yml)
 [![.NET Release](https://github.com/Shinerising/ComTransfer/actions/workflows/dotnet-release.yml/badge.svg)](https://github.com/Shinerising/ComTransfer/actions/workflows/dotnet-release.yml)
 [![GitHub Release Version](https://img.shields.io/github/v/release/Shinerising/Comtransfer)](https://github.com/Shinerising/ComTransfer/releases)
@@ -10,8 +12,6 @@
 ![](https://img.shields.io/badge/.NET%20Framework-512BD4?style=for-the-badge&logo=dotnet)
 ![](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=csharp)
 ![](https://img.shields.io/badge/XAML-0C54C2?style=for-the-badge&logo=xaml)
-
-一款支持计算机之间通过串口执行文件发送、文件拉取、自动化文件备份等操作的轻量级软件。
 
 <img width="426" src="Images/image00.png">
 
