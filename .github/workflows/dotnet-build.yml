@@ -57,7 +57,7 @@ jobs:
 
     env:
       Solution_Name: ComTransfer.sln
-      Archive_Name: "../ComTransfer.zip"
+      Archive_Name: "../ComTransfer-preview.zip"
       Project_Path: ComTransfer.csproj
       Test_Project_Path: UnitTest\UnitTest.csproj
 
