@@ -14,41 +14,141 @@ using System.Windows;
 
 namespace ComTransfer
 {
+    /// <summary>
+    /// 用于管理串口通信过程的ViewModel
+    /// </summary>
     public class ComPort : CustomINotifyPropertyChanged
     {
+        /// <summary>
+        /// 串口参数信息
+        /// </summary>
         public string PortInfo => $"COM{PortID} {BaudRate}";
+        /// <summary>
+        /// 串口状态
+        /// </summary>
         public int PortStatus { get; set; } = -1;
+        /// <summary>
+        /// 串口打开状态
+        /// </summary>
         public bool Status_Open => PortStatus >= 0;
+        /// <summary>
+        /// 串口CTS状态
+        /// </summary>
         public bool Status_CTS => PortStatus >= 0 && (PortStatus & PCOMM.S_CTS) > 0;
+        /// <summary>
+        /// 串口DSR状态
+        /// </summary>
         public bool Status_DSR => PortStatus >= 0 && (PortStatus & PCOMM.S_DSR) > 0;
+        /// <summary>
+        /// 串口RI状态
+        /// </summary>
         public bool Status_RI => PortStatus >= 0 && (PortStatus & PCOMM.S_RI) > 0;
+        /// <summary>
+        /// 串口CD状态
+        /// </summary>
         public bool Status_CD => PortStatus >= 0 && (PortStatus & PCOMM.S_CD) > 0;
+
+        /// <summary>
+        /// 串口号
+        /// </summary>
         public int PortID = 1;
+        /// <summary>
+        /// 波特率
+        /// </summary>
         public int BaudRate = 9600;
+        /// <summary>
+        /// 数据位数
+        /// </summary>
         public int DataBits = 8;
+        /// <summary>
+        /// 停止位数
+        /// </summary>
         public int StopBits = 1;
+        /// <summary>
+        /// 纠错方式
+        /// </summary>
         public string Parity = "NONE";
+        /// <summary>
+        /// HW标志
+        /// </summary>
         public bool IsHW = false;
+        /// <summary>
+        /// DW标志
+        /// </summary>
         public bool IsSW = false;
+        /// <summary>
+        /// DTR标志
+        /// </summary>
         public bool IsDTR = true;
+        /// <summary>
+        /// RTS标志
+        /// </summary>
         public bool IsRTS = true;
+        /// <summary>
+        /// 文件标记
+        /// </summary>
         public const int FileKey = 27;
+        /// <summary>
+        /// 串口文件保存地址设置
+        /// </summary>
         public List<string> PortOption => directoryDict.Select(item => string.Format("{0}>[{1}]", item.Key, item.Value)).ToList();
+        /// <summary>
+        /// 文件保存地址字典
+        /// </summary>
         private readonly Dictionary<string, string> directoryDict = new Dictionary<string, string>();
+        /// <summary>
+        /// 默认文件存储目录
+        /// </summary>
         private const string DefaultDirectory = @"C:\";
+        /// <summary>
+        /// 文件保存地址
+        /// </summary>
         public string SaveDirectory = DefaultDirectory;
+        /// <summary>
+        /// 待发送文件地址
+        /// </summary>
         public string SelectedFilePath { get; set; }
+        /// <summary>
+        /// 待拉取拉取地址
+        /// </summary>
         public string PullFilePath { get; set; }
+        /// <summary>
+        /// 工作目录
+        /// </summary>
         public const string WorkingDirectory = "files";
 
+        /// <summary>
+        /// 串口是否已打开
+        /// </summary>
         public bool IsOpen { get; set; }
+        /// <summary>
+        /// 是否正在启动串口通信
+        /// </summary>
         public bool IsOpening { get; set; }
 
+        /// <summary>
+        /// 数据接收计数
+        /// </summary>
         public long ReceiveCount { get; set; } = 0;
+        /// <summary>
+        /// 数据接收总数
+        /// </summary>
         public long ReceiveMax { get; set; } = 0;
+        /// <summary>
+        /// 数据接收进度文本
+        /// </summary>
         public string ReceiveProgress => string.Format("{0}/{1}", ReceiveCount, ReceiveMax);
+        /// <summary>
+        /// 数据接收百分比
+        /// </summary>
         public double ReceivePercent => ReceiveMax == 0 ? 0 : (double)ReceiveCount / ReceiveMax;
+        /// <summary>
+        /// 数据接收剩余时间
+        /// </summary>
         public double ReceiveTime => ReceiveMax == 0 || ReceiveMax <= ReceiveCount ? 0 : (double)(ReceiveMax - ReceiveCount) / BaudRate * 8 * 1.7;
+        /// <summary>
+        /// 数据接收剩余事件文本
+        /// </summary>
         public string ReceiveTimeText => ReceiveTime > 60 ? string.Format("{0:0}分钟{1:0}秒", ReceiveTime / 60, (int)ReceiveTime % 60) : string.Format("{0:0}秒", ReceiveTime);
         public long SendCount { get; set; } = 0;
         public long SendMax { get; set; } = 0;
@@ -58,6 +158,10 @@ namespace ComTransfer
         public string SendTimeText => SendTime > 60 ? string.Format("{0:0}分钟{1:0}秒", SendTime / 60, (int)SendTime % 60) : string.Format("{0:0}秒", SendTime);
         public int SizeLimit = 50;
 
+        /// <summary>
+        /// 设置串口基本参数
+        /// </summary>
+        /// <exception cref="Exception">串口参数设置异常</exception>
         public void SetPort()
         {
             int result;
@@ -160,6 +264,10 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 初始化串口设置
+        /// </summary>
+        /// <returns>是否初始化成功</returns>
         public bool InitialPort()
         {
             SizeLimit = int.Parse(ConfigurationManager.AppSettings["maxsize"] ?? "50");
@@ -186,6 +294,9 @@ namespace ComTransfer
 
             return true;
         }
+        /// <summary>
+        /// 初始化工作目录
+        /// </summary>
         private void InitialWorkingDirectory()
         {
             string workingfolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, WorkingDirectory);
@@ -196,6 +307,9 @@ namespace ComTransfer
             File.SetAttributes(workingfolder, FileAttributes.Hidden);
             Directory.SetCurrentDirectory(workingfolder);
         }
+        /// <summary>
+        /// 初始化文件保存地址
+        /// </summary>
         private void InitialDirectory()
         {
             directoryDict.Clear();
@@ -215,6 +329,11 @@ namespace ComTransfer
                 directoryDict.Add("*", DefaultDirectory);
             }
         }
+
+        /// <summary>
+        /// 获取文件保存位置信息
+        /// </summary>
+        /// <returns>文件位置信息文本</returns>
         public string GetDirectoryInfo()
         {
             return string.Join("|", directoryDict.Select(item => string.Format("{0}>{1}", item.Key, item.Value)));
@@ -986,26 +1105,6 @@ namespace ComTransfer
             }
         }
 
-        private string CompressText(string text)
-        {
-            try
-            {
-                using (MemoryStream stream = new MemoryStream())
-                {
-                    using (DeflateStream deflateStream = new DeflateStream(stream, CompressionMode.Compress))
-                    {
-                        byte[] data = Encoding.Default.GetBytes(text);
-                        deflateStream.Write(data, 0, data.Length);
-                    }
-                    return Encoding.Default.GetString(stream.ToArray());
-                }
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
         private byte[] CompressTextToBytes(string text)
         {
             try
@@ -1033,28 +1132,6 @@ namespace ComTransfer
                 using (MemoryStream outputStream = new MemoryStream())
                 {
                     using (MemoryStream inputStream = new MemoryStream(data))
-                    {
-                        using (DeflateStream deflateStream = new DeflateStream(inputStream, CompressionMode.Decompress))
-                        {
-                            deflateStream.CopyTo(outputStream);
-                            return Encoding.Default.GetString(outputStream.ToArray());
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        private string DecompressText(string text)
-        {
-            try
-            {
-                using (MemoryStream outputStream = new MemoryStream())
-                {
-                    using (MemoryStream inputStream = new MemoryStream(Encoding.Default.GetBytes(text)))
                     {
                         using (DeflateStream deflateStream = new DeflateStream(inputStream, CompressionMode.Decompress))
                         {

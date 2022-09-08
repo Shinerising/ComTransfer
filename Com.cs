@@ -9,8 +9,12 @@ using System.Text;
 
 namespace ComTransfer
 {
+    /// <summary>
+    /// PCOMM数据定义
+    /// </summary>
     public class PCOMM
     {
+        /* 波特率定义 */
         public const int B50 = 0x00;
         public const int B75 = 0x01;
         public const int B110 = 0x02;
@@ -32,30 +36,34 @@ namespace ComTransfer
         public const int B460800 = 0x12;
         public const int B921600 = 0x13;
 
-        /*	MODE setting		*/
-        public const int BIT_5 = 0x00;         /* Word length define	*/
+        /* 数据位数定义 */
+        public const int BIT_5 = 0x00;
         public const int BIT_6 = 0x01;
         public const int BIT_7 = 0x02;
         public const int BIT_8 = 0x03;
 
-        public const int STOP_1 = 0x00;            /* Stop bits define	*/ 
+        /* 停止位数定义 */
+        public const int STOP_1 = 0x00;
         public const int STOP_2 = 0x04;
-        public const int P_EVEN = 0x18;            /* Parity define	*/
+
+        /* 纠错方式定义 */
+        public const int P_EVEN = 0x18;
         public const int P_ODD = 0x08;
         public const int P_SPC = 0x38;
         public const int P_MRK = 0x28;
         public const int P_NONE = 0x00;
-        /*	MODEM CONTROL settin=g	*/
+
+        /* 流控制定义 */
         public const int C_DTR = 0x01;
         public const int C_RTS = 0x02;
 
-        /*	MODEM LINE STATUS	=*/
+        /* 引脚状态定义 */
         public const int S_CTS = 0x01;
         public const int S_DSR = 0x02;
         public const int S_RI = 0x04;
         public const int S_CD = 0x08;
 
-        /* error code */
+        /* 通信错误码定义 */
         public const int SIO_OK = 0;
         public const int SIO_BADPORT = -1;/* no such port or port not opened */
         public const int SIO_OUTCONTROL = -2;/* can't control the board */
@@ -70,6 +78,11 @@ namespace ComTransfer
         public const int SIO_ABORTWRITE = -11;/* write has blocked, and user abort write */
         public const int SIO_WRITETIMEOUT = -12;/* write timeoue has happened */
 
+        /// <summary>
+        /// 获取错误码表示的错误文本
+        /// </summary>
+        /// <param name="error">错误码</param>
+        /// <returns>错误描述文本</returns>
         public static string GetErrorMessage(int error)
         {
             switch (error)
@@ -102,7 +115,7 @@ namespace ComTransfer
             }
         }
 
-        /* file transfer error code */
+        /* 文件传输错误码定义 */
         public const int SIOFT_OK = 0;
         public const int SIOFT_BADPORT = -1;   /* no such port or port not open */
         public const int SIOFT_TIMEOUT = -2;/* protocol timeout */
@@ -117,6 +130,11 @@ namespace ComTransfer
         /* GetLastError to get the error code */
         public const int SIOFT_BOARDNOTSUPPORT = -11;   /* Does not support board */
 
+        /// <summary>
+        /// 获取文件传输错误码表示的错误文本
+        /// </summary>
+        /// <param name="error">错误码</param>
+        /// <returns>错误描述文本</returns>
         public static string GetTransferErrorMessage(int error)
         {
             switch (error)
@@ -149,8 +167,14 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// PCOMM动态链接库名称
+        /// </summary>
         private const string DLL_NAME = "PCOMM.dll";
 
+        /// <summary>
+        /// 初始化链接库地址
+        /// </summary>
         public static void InitializeLibrary()
         {
             string libraryPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
