@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
@@ -148,6 +150,13 @@ namespace ComTransfer
         }
 
         private const string DLL_NAME = "PCOMM.dll";
+
+        public static void InitializeLibrary()
+        {
+            string libraryPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            libraryPath = Path.Combine(libraryPath, "pcomm", IntPtr.Size == 8 ? "x64" : "x86");
+            Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + libraryPath);
+        }
 
         public delegate void pCallback(int port);
         public delegate int xCallBack(int xmitlen, int buflen, byte[] buf, int flen);

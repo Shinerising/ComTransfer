@@ -132,8 +132,8 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="lib\x64\PCOMM.lib" />
-    <None Include="lib\x86\PCOMM.LIB" />
+    <None Include="pcomm\x64\PCOMM.lib" />
+    <None Include="pcomm\x86\PCOMM.LIB" />
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -158,10 +158,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Resource Include="app.ico" />
-    <Content Include="lib\x64\PCOMM.dll">
+    <Content Include="pcomm\x64\PCOMM.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="lib\x86\PCOMM.DLL">
+    <Content Include="pcomm\x86\PCOMM.DLL">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

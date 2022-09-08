@@ -386,6 +386,7 @@ namespace ComTransfer
                         try
                         {
                             result = PCOMM.sio_iqueue(PortID);
+                            IsReceiving = false;
                             if (result > 0)
                             {
                                 Array.Clear(buffer, 0, buffer.Length);
