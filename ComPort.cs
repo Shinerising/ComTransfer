@@ -244,13 +244,31 @@ namespace ComTransfer
             }
         }
 
-        public void DelayOpen(int delay)
+        public void DelayOpen(int delay, int wait = 1000, int retry = 0)
         {
             Task.Factory.StartNew(() =>
             {
                 Thread.Sleep(delay);
 
+                if (IsOpen)
+                {
+                    return;
+                }
+
+                AddLog("操作记录", "正在自动打开串行端口：" + PortInfo);
                 OpenPort();
+
+                while (!IsOpen && retry > 0)
+                {
+                    AddLog("操作记录", string.Format("串口打开失败，{0}毫秒后自动重试", wait));
+
+                    Thread.Sleep(wait);
+
+                    AddLog("操作记录", "正在重试打开串行端口：" + PortInfo);
+                    OpenPort();
+
+                    retry -= 1;
+                }
             });
         }
 

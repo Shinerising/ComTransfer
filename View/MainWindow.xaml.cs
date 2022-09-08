@@ -29,16 +29,16 @@ namespace ComTransfer
 
             InitializeComponent();
 
-            CheckAutoRun();
-
             CheckPipeline();
+
+            CheckAutoRun();
         }
 
         private void CheckAutoRun()
         {
             if (ConfigurationManager.AppSettings["autorun"]?.ToUpper() == "TRUE")
             {
-                port.DelayOpen(1000);
+                port.DelayOpen(1000, 10000, 2);
             }
         }
 

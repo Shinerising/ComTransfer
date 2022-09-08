@@ -12,7 +12,7 @@
 
 ## 软件功能
 
-- 采用`.NET Framework 4.0`开发，支持Windows XP及之后所有的Windows系统，同时支持32位和64位系统；
+- 采用 `.NET Framework 4.0`开发，支持Windows XP及之后所有的Windows系统，同时支持32位和64位系统；
 - 采用广泛使用的串口通信扩展库（PComm Lite）实现串口操作和文件发送功能，工作稳定可靠；
 - 采用ZModem文件传输协议，可支持使用最高921600波特率进行传输作业，平均数据传输速度超过100KiB/s；
 - 与其他支持ZModem文件传输协议的串口通信工具保持兼容，可互相收发文件；
@@ -44,9 +44,9 @@
 
 <img width="387" src="Images/image01.png">
 
-文件目录是指所收到文件的存储位置，以不同的文件类型作为区分，并按`后缀名>文件目录|后缀名>文件目录`的格式加以记录，星号表示默认文件类型，如以下设置值表示`TXT`文件存储至`C:\Documents`文件夹，其余文件存储至`C:\Downloads`文件夹：
+文件目录是指所收到文件的存储位置，以不同的文件类型作为区分，并按 `后缀名>文件目录|后缀名>文件目录`的格式加以记录，星号表示默认文件类型，如以下设置值表示 `TXT`文件存储至 `C:\Documents`文件夹，其余文件存储至 `C:\Downloads`文件夹：
 
-```*>C:\Downloads|.TXT>C:\Documents```
+``*>C:\Downloads|.TXT>C:\Documents``
 
 完成设置后关闭该窗口，程序设置会自动记录并更新。
 
@@ -54,7 +54,7 @@
 
 ### 打开串口通信
 
-完成设置后后点击串口通信启动按钮，若通信正常启动，可看到`ON`标志亮起；若未能成功启动，则会在日志列表中显示错误详情。
+完成设置后后点击串口通信启动按钮，若通信正常启动，可看到 `ON`标志亮起；若未能成功启动，则会在日志列表中显示错误详情。
 
 ### 发送文件
 
@@ -103,4 +103,4 @@
 
 ## 开发说明
 
-本项目使用了Moxa提供的PComm Lite串口通信软件开发工具中所包含的扩展库文件，相关信息可参见 https://www.moxa.com.tw/product/download_pcommlite_info.htm 。
+本项目使用了Moxa提供的PComm Lite串口通信软件开发工具中所包含的扩展库文件，相关信息可参见 [NPort 5100 系列 - 軟體與文件 | MOXA](https://www.moxa.com/tw/support/product-support/software-and-documentation/search?psid=50254) 。
