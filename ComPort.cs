@@ -338,6 +338,12 @@ namespace ComTransfer
         {
             return string.Join("|", directoryDict.Select(item => string.Format("{0}>{1}", item.Key, item.Value)));
         }
+        /// <summary>
+        /// 根据文件扩展名获取文件保存地址
+        /// </summary>
+        /// <param name="extension">文件扩展名</param>
+        /// <param name="filename">文件名</param>
+        /// <returns>文件保存地址</returns>
         public string GetDirectory(string extension, string filename)
         {
             string path = GetLocation(filename);
@@ -363,6 +369,12 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 延迟一段时间后打开串口通信
+        /// </summary>
+        /// <param name="delay">延迟时间</param>
+        /// <param name="wait">重试等待时间</param>
+        /// <param name="retry">重试次数</param>
         public void DelayOpen(int delay, int wait = 1000, int retry = 0)
         {
             Task.Factory.StartNew(() =>
@@ -391,7 +403,10 @@ namespace ComTransfer
             });
         }
 
-
+        /// <summary>
+        /// 打开串口
+        /// </summary>
+        /// <returns>是否成功打开</returns>
         public bool OpenPort()
         {
             if (IsOpening)
@@ -438,6 +453,10 @@ namespace ComTransfer
             return true;
         }
 
+        /// <summary>
+        /// 关闭串口
+        /// </summary>
+        /// <returns>是否成功关闭</returns>
         public bool ClosePort()
         {
             StopTask();
@@ -455,21 +474,66 @@ namespace ComTransfer
             return true;
         }
 
+        /// <summary>
+        /// 发送任务缓冲数量
+        /// </summary>
         private const int BufferSize = 100;
+        /// <summary>
+        /// 数据接收任务
+        /// </summary>
         private readonly Task receiveTask;
+        /// <summary>
+        /// 数据发送任务
+        /// </summary>
         private readonly Task sendTask;
+        /// <summary>
+        /// 文件处理任务
+        /// </summary>
         private readonly Task fileTask;
+        /// <summary>
+        /// 状态监视任务
+        /// </summary>
         private readonly Task statusTask;
+        /// <summary>
+        /// 任务退出标记
+        /// </summary>
         private readonly CancellationTokenSource cancellation;
+        /// <summary>
+        /// 文件发送列表
+        /// </summary>
         private readonly ConcurrentQueue<string> SendFileList;
+        /// <summary>
+        /// 文件接收列表
+        /// </summary>
         private readonly ConcurrentQueue<string> ReceiveFileList;
+        /// <summary>
+        /// 文件接收处理器
+        /// </summary>
         public EventHandler<FileSystemEventArgs> ReceiveHandler;
+        /// <summary>
+        /// 任务是否已启动
+        /// </summary>
         public bool IsStarted { get; private set; }
+        /// <summary>
+        /// 是否正在发送文件
+        /// </summary>
         public bool IsSending { get; private set; }
+        /// <summary>
+        /// 是否正在等待接收文件
+        /// </summary>
         public bool IsReceiveWaiting { get; private set; }
+        /// <summary>
+        /// 是否正在接收文件
+        /// </summary>
         public bool IsReceiving { get; private set; }
+        /// <summary>
+        /// 正在发送的文件名称
+        /// </summary>
         public string CurrentSendingFile { get; private set; }
 
+        /// <summary>
+        /// 构造函数
+        /// </summary>
         public ComPort()
         {
             SendFileList = new ConcurrentQueue<string>();
@@ -781,22 +845,56 @@ namespace ComTransfer
             }, cancellation.Token, TaskCreationOptions.LongRunning);
         }
 
+        /// <summary>
+        /// 是否执行强制终止发送指令
+        /// </summary>
         private bool IsForceStopSending;
+        /// <summary>
+        /// 是否执行强制终止接收指令
+        /// </summary>
         private bool IsForceStopReceiving;
 
+        /// <summary>
+        /// 强制终止文件发送
+        /// </summary>
         public void ForceStopSending()
         {
             IsForceStopSending = true;
         }
 
+        /// <summary>
+        /// 强制终止文件接收
+        /// </summary>
         public void ForceStopReceiving()
         {
             IsForceStopReceiving = true;
         }
 
+        /// <summary>
+        /// 数据发送回调委托
+        /// </summary>
+        /// <param name="xmitlen">已发送数据长度</param>
+        /// <param name="buflen">当前时间片段数据长度</param>
+        /// <param name="buf">当前时间片段数据内容</param>
+        /// <param name="flen">发送数据总长度</param>
+        /// <returns></returns>
         public delegate int xCallBack(int xmitlen, int buflen, byte[] buf, int flen);
+        /// <summary>
+        /// 数据接收回调委托
+        /// </summary>
+        /// <param name="recvlen">已接收数据长度</param>
+        /// <param name="buflen">当前时间片段数据长度</param>
+        /// <param name="buf">当前时间片段数据内容</param>
+        /// <param name="flen">接收数据总长度</param>
         public delegate int rCallBack(int recvlen, int buflen, byte[] buf, int flen);
 
+        /// <summary>
+        /// 数据接收回调
+        /// </summary>
+        /// <param name="recvlen">已接收数据长度</param>
+        /// <param name="buflen">当前时间片段数据长度</param>
+        /// <param name="buf">当前时间片段数据内容</param>
+        /// <param name="flen">接收数据总长度</param>
         private int ReceiveCallback(int recvlen, int buflen, byte[] buf, int flen)
         {
             if (IsSending)
@@ -841,6 +939,13 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 数据发送回调
+        /// </summary>
+        /// <param name="xmitlen">已发送数据长度</param>
+        /// <param name="buflen">当前时间片段数据长度</param>
+        /// <param name="buf">当前时间片段数据内容</param>
+        /// <param name="flen">发送数据总长度</param>
         private int SendCallback(int xmitlen, int buflen, byte[] buf, int flen)
         {
             if (IsStarted && !IsForceStopSending)
@@ -870,6 +975,11 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 计划任务相关文件发送事件处理
+        /// </summary>
+        /// <param name="sender">事件对象</param>
+        /// <param name="e">事件参数</param>
         private void FileTaskHandler(object sender, TaskManager.FileTaskEventArgs e)
         {
             AddLog("计划任务", "开始准备发送", e.File);
@@ -880,6 +990,9 @@ namespace ComTransfer
             SendFile(e.File);
         }
 
+        /// <summary>
+        /// 启动各个任务
+        /// </summary>
         private void StartTask()
         {
             IsStarted = true;
@@ -914,6 +1027,9 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 终止所有任务
+        /// </summary>
         private void StopTask()
         {
             TaskManager.Instance.FileTaskHandler -= FileTaskHandler;
@@ -924,23 +1040,38 @@ namespace ComTransfer
             IsReceiving = false;
         }
 
+        /// <summary>
+        /// 释放所有托管资源
+        /// </summary>
         public void Dispose()
         {
             cancellation.Cancel();
         }
 
+        /// <summary>
+        /// 选择远程文件地址
+        /// </summary>
+        /// <param name="filename">文件地址</param>
         public void SelectRemotePath(string filename)
         {
             PullFilePath = filename;
             Notify(new { PullFilePath });
         }
 
+        /// <summary>
+        /// 选择本地文件地址
+        /// </summary>
+        /// <param name="filename">文件地址</param>
         public void SelectFile(string filename)
         {
             SelectedFilePath = filename;
             Notify(new { SelectedFilePath });
         }
 
+        /// <summary>
+        /// 发送文件
+        /// </summary>
+        /// <param name="filename">文件地址</param>
         public void SendFile(string filename)
         {
             SendFileList.Enqueue(filename);
@@ -962,8 +1093,16 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 是否正在处理命令
+        /// </summary>
         private bool IsCommandBusy;
 
+        /// <summary>
+        /// 发送错误报告
+        /// </summary>
+        /// <param name="message">错误信息文本</param>
+        /// <param name="filename">文件名</param>
         public void SendErrorReport(string message, string filename = null)
         {
             if (message==null || message.ToUpper().EndsWith(".APPCOMMAND"))
@@ -977,6 +1116,11 @@ namespace ComTransfer
             SubmitCommand("errorreport", message);
         }
 
+        /// <summary>
+        /// 发出指令内容
+        /// </summary>
+        /// <param name="command">指令文本</param>
+        /// <param name="param">指令参数</param>
         public void SubmitCommand(string command, string param)
         {
             if (command == null || command.Trim().Length == 0)
