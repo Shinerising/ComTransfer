@@ -1184,11 +1184,28 @@ namespace ComTransfer
             IsCommandBusy = false;
         }
 
+        /// <summary>
+        /// 最近一次指令文本
+        /// </summary>
         public string LastCommand;
+        /// <summary>
+        /// 最近一次拉取的文件名
+        /// </summary>
         private string LastFetchFile;
+        /// <summary>
+        /// 当前文件存放位置
+        /// </summary>
         private string setLocation;
+        /// <summary>
+        /// 设置当前文件存放位置的时间戳
+        /// </summary>
         private DateTime setLocationTime;
 
+        /// <summary>
+        /// 获取当前文件保存位置
+        /// </summary>
+        /// <param name="filename">文件名</param>
+        /// <returns>目标文件地址</returns>
         public string GetLocation(string filename)
         {
             if (setLocation == null || filename == null || DateTime.Now - setLocationTime > TimeSpan.FromMinutes(20) || !setLocation.EndsWith(filename))
@@ -1200,6 +1217,10 @@ namespace ComTransfer
             return location.Substring(0, location.Length - filename.Length);
         }
 
+        /// <summary>
+        /// 设置当前文件保存位置
+        /// </summary>
+        /// <param name="path">文件目录地址</param>
         public void SetLocation(string path)
         {
             if (path.StartsWith("[") && path.Contains(@"]"))
@@ -1210,11 +1231,18 @@ namespace ComTransfer
             setLocationTime = DateTime.Now;
         }
 
+        /// <summary>
+        /// 清除当前文件保存位置
+        /// </summary>
         public void ClearLocation()
         {
             setLocation = null;
         }
 
+        /// <summary>
+        /// 处理指令文本
+        /// </summary>
+        /// <param name="command">指令内容</param>
         private void ResolveCommand(string command)
         {
             LastCommand = command;
@@ -1249,6 +1277,11 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 压缩字符串
+        /// </summary>
+        /// <param name="text">字符串</param>
+        /// <returns>压缩后数据</returns>
         private byte[] CompressTextToBytes(string text)
         {
             try
@@ -1269,6 +1302,11 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 解压为字符串
+        /// </summary>
+        /// <param name="data">原始压缩数据</param>
+        /// <returns>字符串</returns>
         private string DecompressText(byte[] data)
         {
             try
@@ -1291,6 +1329,11 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 获取包含文件目录列表信息的字符串
+        /// </summary>
+        /// <param name="root">文件目录位置</param>
+        /// <returns>数据字符串</returns>
         private string GetFileTreeText(string root)
         {
             try
@@ -1356,11 +1399,27 @@ namespace ComTransfer
             return string.Empty;
         }
 
+        /// <summary>
+        /// 工作日志显示上限
+        /// </summary>
         private const int LogLimit = 200;
+        /// <summary>
+        /// 工作日志列表
+        /// </summary>
         public ObservableCollection<string> LogList { get; set; } = new ObservableCollection<string>();
+        /// <summary>
+        /// 传输记录显示上限
+        /// </summary>
         private const int RecordLimit = 100;
+        /// <summary>
+        /// 传输记录列表
+        /// </summary>
         public ObservableCollection<string> RecordList { get; set; } = new ObservableCollection<string>();
         
+        /// <summary>
+        /// 添加一条简单日志内容
+        /// </summary>
+        /// <param name="message">日志文本</param>
         public void AddSimpleLog(string message)
         {
             try
@@ -1381,6 +1440,12 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 添加一条工作日志信息
+        /// </summary>
+        /// <param name="brief">信息摘要</param>
+        /// <param name="message">信息文本</param>
+        /// <param name="filename">文件名</param>
         public void AddLog(string brief, string message, string filename = null)
         {
             if (filename != null && filename.ToUpper().EndsWith(".GZ"))
@@ -1415,6 +1480,11 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 添加一条文件传输记录
+        /// </summary>
+        /// <param name="isSend">是否为发送操作（若否表示接收操作）</param>
+        /// <param name="filename">文件名称</param>
         public void AddTransferRecord(bool isSend, string filename)
         {
             if (filename != null && filename.ToUpper().EndsWith(".APPCOMMAND"))
@@ -1446,11 +1516,17 @@ namespace ComTransfer
             }
         }
 
+        /// <summary>
+        /// 清除工作日志
+        /// </summary>
         public void ClearLog()
         {
             LogList.Clear();
         }
 
+        /// <summary>
+        /// 清除传输记录
+        /// </summary>
         public void ClearRecord()
         {
             RecordList.Clear();
