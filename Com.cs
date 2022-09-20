@@ -173,6 +173,10 @@ namespace ComTransfer
         /// </summary>
         public static void InitializeLibrary()
         {
+            if (Assembly.GetEntryAssembly() == null)
+            {
+                return;
+            }
             string libraryPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             libraryPath = Path.Combine(libraryPath, "pcomm", IntPtr.Size == 8 ? "x64" : "x86");
             Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + libraryPath);
