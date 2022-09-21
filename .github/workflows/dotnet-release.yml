@@ -86,7 +86,7 @@ jobs:
       run: nuget restore $env:Solution_Name
         
     - name: Build Solution
-      run: msbuild.exe $env:Solution_Name /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_build"
+      run: msbuild.exe $env:Solution_Name /t:ComTransfer /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_build"
 
     # Sign Binaries
     - name: Sign Binaries
