@@ -60,6 +60,7 @@ jobs:
       Archive_Name: "../ComTransfer-preview.zip"
       Project_Path: ComTransfer.csproj
       Test_Project_Path: UnitTest\UnitTest.csproj
+      Test_Target: '../_build/UnitTest.dll'
 
     steps:
     - name: Checkout
@@ -88,7 +89,12 @@ jobs:
         
     - name: Build Solution
       run: msbuild.exe $env:Solution_Name /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_build"
-      
+    
+    - name: Run tests
+      uses: microsoft-approved-actions/vstest@master
+      with:
+        testAssembly: ${{ env.Test_Target }}
+        
     # Sign Binaries
     - name: Sign Binaries
       uses: GabrielAcostaEngler/signtool-code-sign@main
