@@ -92,7 +92,7 @@ namespace ComTransfer
 
             SaveAllConfig();
         }
-        public void SaveAllConfig()
+        private void SaveAllConfig()
         {
             SaveConfig(new Dictionary<string, object>()
             {
