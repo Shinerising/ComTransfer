@@ -31,11 +31,6 @@ namespace ComTransfer
             TaskManager.SaveFailFileData(TaskManager.Instance.FailFileList);
         }
 
-        private void ListBox_Selected(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void Button_Add_Click(object sender, RoutedEventArgs e)
         {
             TaskList.Add(new TaskNode());
