@@ -60,18 +60,13 @@ jobs:
       Archive_Name: "../ComTransfer-preview.zip"
       Project_Path: ComTransfer.csproj
       Test_Project_Path: UnitTest\UnitTest.csproj
+      Test_Target: '../_test/UnitTest.dll'
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-
-    # Install the .NET Core workload
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x
 
     # Add MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
@@ -86,9 +81,18 @@ jobs:
     - name: Restore Packages
       run: nuget restore $env:Solution_Name
         
-    - name: Build Solution
-      run: msbuild.exe $env:Solution_Name /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_build"
+    - name: Build Test Project
+      run: msbuild.exe $env:Solution_Name /target:UnitTest /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_test"
+    
+    - name: Setup VSTest Path
+      uses: darenm/Setup-VSTest@v1
       
+    - name: Run tests
+      run: vstest.console.exe ${{ env.Test_Target }}
+              
+    - name: Build Solution
+      run: msbuild.exe $env:Solution_Name /target:ComTransfer /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_build"
+        
     # Sign Binaries
     - name: Sign Binaries
       uses: GabrielAcostaEngler/signtool-code-sign@main
@@ -105,7 +109,7 @@ jobs:
       uses: thedoctor0/zip-release@main
       with:
         type: "zip"
-        path: "../../_build/*"
+        path: "../_build/*"
         filename: ${{ env.Archive_Name }}
 
     - name: Generate Release
