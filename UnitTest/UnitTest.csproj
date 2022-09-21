@@ -62,8 +62,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ComTransfer.csproj">
-      <Project>{66413FCC-BABF-405F-89C5-A07D193C323C}</Project>
+    <ProjectReference Include="..\ComTransfer\ComTransfer.csproj">
+      <Project>{66413fcc-babf-405f-89c5-a07d193c323c}</Project>
       <Name>ComTransfer</Name>
     </ProjectReference>
   </ItemGroup>
