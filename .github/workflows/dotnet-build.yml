@@ -88,7 +88,7 @@ jobs:
       run: nuget restore $env:Solution_Name
         
     - name: Build Test Project
-      run: msbuild.exe $env:Solution_Name /target:UnitTest /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_test"
+      run: msbuild.exe $env:Solution_Name /target:UnitTest /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_test"
     
     - name: Setup VSTest Path
       uses: darenm/Setup-VSTest@v1
@@ -97,7 +97,7 @@ jobs:
       run: vstest.console.exe ${{ env.Test_Target }}
               
     - name: Build Solution
-      run: msbuild.exe $env:Solution_Name /target:ComTransfer /t:Build /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_build"
+      run: msbuild.exe $env:Solution_Name /target:ComTransfer /p:DeleteExistingFiles=True /p:platform="Any CPU" /p:configuration="Release" /p:DebugSymbols=false /p:DebugType=None /p:OutputPath="../../_build"
         
     # Sign Binaries
     - name: Sign Binaries
