@@ -104,7 +104,7 @@ jobs:
       uses: thedoctor0/zip-release@main
       with:
         type: "zip"
-        path: "../../_build/*"
+        path: "../_build/*"
         filename: ${{ env.Archive_Name }}
 
     - name: Generate Release
