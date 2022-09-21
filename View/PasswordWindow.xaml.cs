@@ -39,6 +39,8 @@ namespace ComTransfer
         /// <param name="isHint">是否允许提示</param>
         public PasswordWindow(Window owner, string message, string password, string caption, bool isHint)
         {
+            Loaded += PasswordWindow_Loaded;
+
             Owner = owner;
             PasswordCaption = caption;
             PasswordMessage = message;
@@ -51,6 +53,14 @@ namespace ComTransfer
             InitializeComponent();
 
             PasswordBox_Normal.Focus();
+        }
+
+        private void PasswordWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(PasswordTarget))
+            {
+                Close();
+            }
         }
 
         /// <summary>

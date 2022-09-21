@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
@@ -50,40 +51,51 @@ namespace ComTransfer.Tests
         }
 
         [TestMethod()]
-        public void PasswordWindowTest()
+        public void PasswordWindowTest01()
         {
-            PasswordWindow window = null;
-            bool? result = null;
+            Assert.IsFalse(PasswordWindow.Show(null, "", ""));
 
-            var t = new Thread(() =>
+            PasswordWindow window = new PasswordWindow(null, "", "123456", "", false);
+            Assert.IsNotNull(window);
+            window.Loaded += (object sender, RoutedEventArgs e) =>
             {
-                window = new PasswordWindow(null, "", "123456", "", false);
-                Assert.IsNotNull(window);
-                result = window.ShowDialog();
-                System.Windows.Threading.Dispatcher.Run();
-            });
-
-            t.SetApartmentState(ApartmentState.STA);
-            t.Start();
-
-            while (window == null)
+                Button button = window.FindName("Button_Cancel") as Button;
+                Assert.IsNotNull(button);
+                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            };
+            Assert.IsFalse(window.ShowDialog());
+        }
+        [TestMethod()]
+        public void PasswordWindowText02()
+        {
+            PasswordWindow window = new PasswordWindow(null, "", "123456", "", false);
+            window.Loaded += (object sender, RoutedEventArgs e) =>
             {
-                Thread.Sleep(10);
-            }
-
-            window.Dispatcher.Invoke(() =>
-            {
+                PasswordBox passwordBox = window.FindName("PasswordBox_Normal") as PasswordBox;
+                TextBox textBox = window.FindName("PasswordBox_View") as TextBox;
                 Button button = window.FindName("Button_Submit") as Button;
+                Button toggleButton = window.FindName("Button_Toggle") as Button;
+                Assert.IsNotNull(passwordBox);
+                Assert.IsNotNull(textBox);
+                Assert.IsNotNull(button);
+                Assert.IsNotNull(toggleButton);
+
                 button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 Assert.IsTrue(window.IsVisible);
 
-                PasswordBox passwordBox = window.FindName("PasswordBox_Normal") as PasswordBox;
+                toggleButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                Assert.IsTrue(textBox.IsVisible);
+                textBox.Text = "12345";
+                button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                Assert.IsTrue(window.IsVisible);
+
+                toggleButton.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                Assert.IsTrue(passwordBox.IsVisible);
                 passwordBox.Password = "123456";
                 button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
                 Assert.IsFalse(window.IsVisible);
-            });
-
-            Assert.IsTrue(result);
+            };
+            Assert.IsTrue(window.ShowDialog());
         }
     }
 }
