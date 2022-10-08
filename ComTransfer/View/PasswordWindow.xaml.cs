@@ -122,12 +122,14 @@ namespace ComTransfer
                 PasswordBox_View.Visibility = Visibility.Collapsed;
                 PasswordBox_Normal.Password = PasswordInput;
                 PasswordBox_Normal.Focus();
+                Button_Toggle.Tag = true;
             }
             else
             {
                 PasswordBox_View.Visibility = Visibility.Visible;
                 PasswordBox_View.Text = PasswordInput;
                 PasswordBox_View.Focus();
+                Button_Toggle.Tag = false;
             }
         }
     }
