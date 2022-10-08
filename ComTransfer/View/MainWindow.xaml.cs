@@ -40,7 +40,15 @@ namespace ComTransfer
         {
             if (ConfigurationManager.AppSettings["autorun"]?.ToUpper() == "TRUE")
             {
-                port.DelayOpen(1000, 10000, 2);
+                if(!int.TryParse(ConfigurationManager.AppSettings["waittime"], out int wait))
+                {
+                    wait = 10000;
+                }
+                if (!int.TryParse(ConfigurationManager.AppSettings["retrycount"], out int retry))
+                {
+                    retry = 5;
+                }
+                port.DelayOpen(1000, wait, retry);
             }
         }
 
