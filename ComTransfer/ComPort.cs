@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace ComTransfer
 {
@@ -293,6 +294,20 @@ namespace ComTransfer
             Notify(new { PortInfo, PortOption });
 
             return true;
+        }
+        public void RestartPort(int id, int baudrate)
+        {
+            Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            configuration.AppSettings.Settings["com"].Value = id.ToString();
+            configuration.AppSettings.Settings["baudrate"].Value = baudrate.ToString();
+            configuration.Save(ConfigurationSaveMode.Minimal, true);
+            ConfigurationManager.RefreshSection("appSettings");
+
+            if (IsOpen)
+            {
+                ClosePort();
+            }
+            OpenPort();
         }
         /// <summary>
         /// 初始化工作目录

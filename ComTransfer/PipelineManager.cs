@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ComTransfer
 {
@@ -251,6 +252,20 @@ namespace ComTransfer
             switch (commandType)
             {
                 case CommandType.Default:
+                    break;
+                case CommandType.ConnectParam:
+                    {
+                        try
+                        {
+                            string[] parameters = data.Split(',');
+                            int.TryParse(parameters[0].Substring(3), out int id);
+                            int.TryParse(parameters[1], out int baudrate);
+                            comPort.RestartPort(id, baudrate);
+                        }
+                        catch
+                        {
+                        }
+                    }
                     break;
                 case CommandType.FileTreeRequest:
                     mainWindow.SubmitCommand("requestfile", data);
