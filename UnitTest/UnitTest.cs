@@ -155,12 +155,12 @@ namespace ComTransfer.Tests
             Assert.IsNotNull(button01);
             Assert.IsNotNull(button02);
 
-            Assert.AreEqual(listBox.Items.Count, 1);
+            Assert.AreEqual(listBox.Items.Count, 0);
             button01.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
-            Assert.AreEqual(listBox.Items.Count, 2);
-            listBox.SelectedItem = listBox.Items[1];
-            button02.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             Assert.AreEqual(listBox.Items.Count, 1);
+            listBox.SelectedItem = listBox.Items[0];
+            button02.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            Assert.AreEqual(listBox.Items.Count, 0);
 
             window.Close();
         }

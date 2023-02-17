@@ -55,6 +55,11 @@ namespace ComTransfer
             PasswordBox_Normal.Focus();
         }
 
+        /// <summary>
+        /// 窗口对象加载完毕
+        /// </summary>
+        /// <param name="sender">事件对象</param>
+        /// <param name="e">事件参数</param>
         private void PasswordWindow_Loaded(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(PasswordTarget))
@@ -105,16 +110,31 @@ namespace ComTransfer
             DialogResult = false;
         }
 
+        /// <summary>
+        /// 密码输入框修改事件响应
+        /// </summary>
+        /// <param name="sender">事件对象</param>
+        /// <param name="e">事件参数</param>
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
         {
             PasswordInput = ((PasswordBox)sender).Password;
         }
 
+        /// <summary>
+        /// 文本框修改事件响应
+        /// </summary>
+        /// <param name="sender">事件对象</param>
+        /// <param name="e">事件参数</param>
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             PasswordInput = ((TextBox)sender).Text;
         }
 
+        /// <summary>
+        /// 密码显示切换按钮点击
+        /// </summary>
+        /// <param name="sender">事件对象</param>
+        /// <param name="e">事件参数</param>
         private void Button_View_Click(object sender, RoutedEventArgs e)
         {
             if (PasswordBox_View.IsVisible)
@@ -122,12 +142,14 @@ namespace ComTransfer
                 PasswordBox_View.Visibility = Visibility.Collapsed;
                 PasswordBox_Normal.Password = PasswordInput;
                 PasswordBox_Normal.Focus();
+                Button_Toggle.Tag = true;
             }
             else
             {
                 PasswordBox_View.Visibility = Visibility.Visible;
                 PasswordBox_View.Text = PasswordInput;
                 PasswordBox_View.Focus();
+                Button_Toggle.Tag = false;
             }
         }
     }
