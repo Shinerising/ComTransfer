@@ -7,300 +7,324 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=local:ComPort}"
         Title="自动化串口文件传输工具" Width="380" Height="560" MinWidth="280" MinHeight="360" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Closing="Window_Closing" KeyDown="Window_KeyDown" Icon="/app.ico">
-    <Window.Resources>
-        <Style TargetType="Label">
-            <Setter Property="Padding" Value="2,4"/>
-            <Setter Property="Foreground" Value="#444466"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-        <Style x:Key="Label_Status" TargetType="Label">
-            <Setter Property="Height" Value="24"/>
-            <Setter Property="Padding" Value="4,2"/>
-            <Setter Property="Margin" Value="0,0,4,0"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#8888AA"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#334466"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Style.Triggers>
-                <Trigger Property="IsEnabled" Value="True">
-                    <Setter Property="BorderBrush" Value="#55AA88"/>
-                    <Setter Property="Background" Value="#55DD88"/>
-                    <Setter Property="Foreground" Value="#FFFFFF"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#666688"/>
-        </Style>
-        <Style TargetType="ListBox">
-            <Setter Property="Margin" Value="0"/>
-        </Style>
-        <Style TargetType="Path">
-            <Setter Property="Width" Value="16"/>
-            <Setter Property="Height" Value="16"/>
-            <Setter Property="Stroke" Value="#444466"/>
-            <Setter Property="StrokeLineJoin" Value="Round"/>
-            <Setter Property="StrokeThickness" Value="1.5"/>
-        </Style>
-        <Style TargetType="Button">
-            <Setter Property="Width" Value="24"/>
-            <Setter Property="Height" Value="24"/>
-            <Setter Property="Background" Value="#F8F8F8"/>
-        </Style>
-        <Style TargetType="TextBox">
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="Height" Value="Auto"/>
-            <Setter Property="Padding" Value="2,0"/>
-            <Setter Property="TextWrapping" Value="NoWrap"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-    </Window.Resources>
-    <Grid Margin="4">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="64"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="2*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="1*"/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Margin="0,0,0,2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="串口信息"/>
-            <StackPanel Grid.Column="1" Margin="4,0" Orientation="Horizontal">
-                <Label Content="{Binding PortInfo, FallbackValue=COM1 9600}" Style="{StaticResource Label_Status}" Background="#33AAFF" BorderBrush="#2255AA" Margin="0,0,4,0" ToolTip="串口参数" MouseDown="Label_Com_MouseDown"/>
-                <Label Content="ON" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_Open}" ToolTip="开启状态"/>
-                <Label Content="CTS" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_CTS}" ToolTip="CTS状态"/>
-                <Label Content="DSR" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_DSR}" ToolTip="DSR状态"/>
-                <Label Content="DCD" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_CD}" ToolTip="DCD状态"/>
-                <Label Content="RI" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_RI}" ToolTip="RI状态"/>
-            </StackPanel>
-            <Border Grid.Column="2">
-                <Button Click="Button_Start_Click" ToolTip="打开串口通信">
-                    <Path Data="M1 8L4 8M4 4L4 12L8 13L8 15L12 15L12 1L8 1L8 3ZM12 4L15 4L15 12L12 12M7 5L7 11M9 5L9 11"/>
-                </Button>
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsOpen}" Value="True">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-            </Border>
-            <Border Grid.Column="2">
-                <Button Click="Button_Start_Click" ToolTip="关闭串口通信">
-                    <Path Data="M1 4L1 12L5 13L5 15L9 15L9 1L5 1L5 3ZM4 5L4 11M6 5L6 11M11 6L15 10M15 6L11 10"/>
-                </Button>
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsOpen}" Value="False">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-            </Border>
-        </Grid>
-        <Grid Grid.Row="1" Margin="0,2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="程序设置"/>
-            <ItemsControl Grid.Column="1" Margin="4,0" VerticalAlignment="Stretch" ItemsSource="{Binding PortOption}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Label Content="{Binding}" Style="{StaticResource Label_Status}" Background="#FFEE44" BorderBrush="#DDAA22" Foreground="#334466" Margin="0,0,4,0" ToolTip="存储目标地址" MouseDown="Label_Folder_MouseDown"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <Border Grid.Column="2">
-                <Button Grid.Column="2" Click="Button_Option_Click" ToolTip="程序设置">
-                    <Path Data="M1 13L6 8A5 5 0 0 1 9 1L12 1L10 4L12 6L15 3A5 5 0 0 1 9 10L4 15"/>
-                </Button>
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsOpen}" Value="True">
-                                <Setter Property="IsEnabled" Value="False"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-            </Border>
-        </Grid>
-        <Grid Grid.Row="2" Margin="0,2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="拉取文件"/>
-            <TextBox Grid.Column="1" Text="{Binding PullFilePath}" Margin="4,0"/>
-            <Button Grid.Column="2" Margin="0,0,4,0" IsEnabled="{Binding IsOpen}" Click="Button_SelectRemote_Click" ToolTip="选择远端文件">
-                <Path Data="M10 4L9 4L7 3L2 3L1 4L1 13M13 13L15 7L3 7L1 13ZM11 3L15 3M13 1L13 5"/>
-            </Button>
-            <Button Grid.Column="3" Click="Button_Pull_Click" IsEnabled="{Binding IsOpen}" ToolTip="拉取文件">
-                <Path Data="M15 11L15 4L13 4L11 3L6 3L4 4L4 8M4 12L4 13L6 13M9 13L15 13L15 11M4 6L11 6L13 4M1 10L9 10M7 8L9 10L7 12"/>
-            </Button>
-        </Grid>
-        <Grid Grid.Row="3" Margin="0,2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="发送文件"/>
-            <TextBox Grid.Column="1" Text="{Binding SelectedFilePath}" Margin="4,0"/>
-            <Button Grid.Column="2" Margin="0,0,4,0" Click="Button_Select_Click" ToolTip="选择文件">
-                <Path Data="M13 7L13 4L11 4L9 4L7 3L2 3L1 4L1 13M13 13L15 7L3 7L1 13Z"/>
-            </Button>
-            <Button Grid.Column="3" Click="Button_Push_Click" IsEnabled="{Binding IsOpen}" ToolTip="发送文件">
-                <Path Data="M11 7L11 4L9 4L7 3L2 3L1 4L1 13L11 13L11 11M1 6L7 6L9 4M7 9L15 9M13 7L15 9L13 11"/>
-            </Button>
-        </Grid>
-        <Grid Grid.Row="4" Margin="0,2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="计划任务"/>
-            <Button Grid.Column="1" Margin="4,0,0,0" Click="Button_Task_Click" ToolTip="计划任务管理">
-                <Path Data="M1 3L3 5L6 2M8 3L15 3M1 8L3 10L6 7M8 8L15 8M1 13L3 15L6 12M8 13L15 13"/>
-            </Button>
-        </Grid>
-        <Grid Grid.Row="5" Margin="0,2">
-            <ListBox ItemsSource="{Binding TaskList, Source={x:Static local:TaskManager.Instance}}"/>
-        </Grid>
-        <Grid Grid.Row="6" Margin="0,2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="工作日志"/>
-            <Button Grid.Column="1" Margin="4,0,0,0" Click="Button_ClearLog_Click" ToolTip="清除工作日志">
-                <Path Data="M12 3L12 1L1 1L1 15L9 15M3 4L10 4M15 2L11 9M4 10L9 7L14 10L14 15Z"/>
-            </Button>
-        </Grid>
-        <Grid Grid.Row="7" Margin="0,2">
-            <ListBox local:ListBoxBehavior.ScrollOnNewItem="True" ItemsSource="{Binding LogList}"/>
-        </Grid>
-        <Grid Grid.Row="8" Margin="0,2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Label Grid.Column="0" Content="传输记录"/>
-            <Button Grid.Column="1" Margin="4,0,0,0" Click="Button_ClearRecord_Click" ToolTip="清除传输记录">
-                <Path Data="M12 3L12 1L1 1L1 15L9 15M3 4L10 4M15 2L11 9M4 10L9 7L14 10L14 15Z"/>
-            </Button>
-        </Grid>
-        <Grid Grid.Row="9" Margin="0,2,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <ListBox Grid.Row="0" local:ListBoxBehavior.ScrollOnNewItem="True" ItemsSource="{Binding RecordList}"/>
-            <Grid Grid.Row="1" Margin="0,4,0,0">
-                <Border BorderThickness="1" BorderBrush="#9AD" Background="White">
-                    <Border Background="#AEF">
-                        <Border.RenderTransform>
-                            <ScaleTransform ScaleX="{Binding SendPercent}"/>
-                        </Border.RenderTransform>
-                    </Border>
-                </Border>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
-                    <TextBlock Text="发送进度："/>
-                    <TextBlock Text="{Binding SendProgress}"/>
-                    <TextBlock Text="剩余时间：" Margin="8,0,0,0"/>
-                    <TextBlock Text="{Binding SendTimeText}"/>
-                </StackPanel>
-                <Border Width="16" Height="16" Padding="2" HorizontalAlignment="Right" Margin="4,0" MouseUp="Border_StopSending_MouseUp">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="BorderBrush" Value="#666"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#FF3322"/>
-                                    <Setter Property="BorderBrush" Value="#FFF"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <Path Width="12" Height="12" Data="M1 1L11 11M1 11L11 1" Stroke="{Binding Path=BorderBrush, RelativeSource={RelativeSource AncestorType=Border}}" StrokeThickness="1"/>
-                </Border>
-                <Grid.Style>
-                    <Style TargetType="Grid">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding SendMax}" Value="0">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
-            </Grid>
-            <Grid Grid.Row="2" Margin="0,4,0,0">
-                <Border BorderThickness="1" BorderBrush="#9AD" Background="White">
-                    <Border Background="#AEF">
-                        <Border.RenderTransform>
-                            <ScaleTransform ScaleX="{Binding ReceivePercent}"/>
-                        </Border.RenderTransform>
-                    </Border>
-                </Border>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
-                    <TextBlock Text="接收进度："/>
-                    <TextBlock Text="{Binding ReceiveProgress}"/>
-                    <TextBlock Text="剩余时间：" Margin="8,0,0,0"/>
-                    <TextBlock Text="{Binding ReceiveTimeText}"/>
-                </StackPanel>
-                <Border Width="16" Height="16" Padding="2" HorizontalAlignment="Right" Margin="4,0" MouseUp="Border_StopReceiving_MouseUp">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="BorderBrush" Value="#666"/>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="#FF3322"/>
-                                    <Setter Property="BorderBrush" Value="#FFF"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <Path Width="12" Height="12" Data="M1 1L11 11M1 11L11 1" Stroke="{Binding Path=BorderBrush, RelativeSource={RelativeSource AncestorType=Border}}" StrokeThickness="1"/>
-                </Border>
-                <Grid.Style>
-                    <Style TargetType="Grid">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ReceiveMax}" Value="0">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
-            </Grid>
-        </Grid>
-    </Grid>
+    <Control>
+        <Control.Resources>
+            <local:IsMoreThanConverter x:Key="IsMoreThanConverter"/>
+            <Style TargetType="Label">
+                <Setter Property="Padding" Value="2,4"/>
+                <Setter Property="Foreground" Value="#444466"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
+            <Style x:Key="Label_Status" TargetType="Label">
+                <Setter Property="Height" Value="24"/>
+                <Setter Property="Padding" Value="4,2"/>
+                <Setter Property="Margin" Value="0,0,4,0"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="BorderBrush" Value="#8888AA"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="#334466"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="True">
+                        <Setter Property="BorderBrush" Value="#55AA88"/>
+                        <Setter Property="Background" Value="#55DD88"/>
+                        <Setter Property="Foreground" Value="#FFFFFF"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="#666688"/>
+            </Style>
+            <Style TargetType="ListBox">
+                <Setter Property="Margin" Value="0"/>
+            </Style>
+            <Style TargetType="Path">
+                <Setter Property="Width" Value="16"/>
+                <Setter Property="Height" Value="16"/>
+                <Setter Property="Stroke" Value="#444466"/>
+                <Setter Property="StrokeLineJoin" Value="Round"/>
+                <Setter Property="StrokeThickness" Value="1.5"/>
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="Width" Value="24"/>
+                <Setter Property="Height" Value="24"/>
+                <Setter Property="Background" Value="#F8F8F8"/>
+            </Style>
+            <Style TargetType="TextBox">
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="Height" Value="Auto"/>
+                <Setter Property="Padding" Value="2,0"/>
+                <Setter Property="TextWrapping" Value="NoWrap"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+        </Control.Resources>
+        <Control.Template>
+            <ControlTemplate>
+                <Grid x:Name="Grid" Margin="4,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0" x:Name="GridColumnSecond"/>
+                        <ColumnDefinition Width="0" x:Name="GridColumnThird"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="64"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1*" x:Name="GridRowTransfer"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="串口信息"/>
+                        <StackPanel Grid.Column="1" Margin="4,0" Orientation="Horizontal">
+                            <Label Content="{Binding PortInfo, FallbackValue=COM1 9600}" Style="{StaticResource Label_Status}" Background="#33AAFF" BorderBrush="#2255AA" Margin="0,0,4,0" ToolTip="串口参数" MouseDown="Label_Com_MouseDown"/>
+                            <Label Content="ON" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_Open}" ToolTip="开启状态"/>
+                            <Label Content="CTS" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_CTS}" ToolTip="CTS状态"/>
+                            <Label Content="DSR" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_DSR}" ToolTip="DSR状态"/>
+                            <Label Content="DCD" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_CD}" ToolTip="DCD状态"/>
+                            <Label Content="RI" Style="{StaticResource Label_Status}" IsEnabled="{Binding Status_RI}" ToolTip="RI状态"/>
+                        </StackPanel>
+                        <Border Grid.Column="2">
+                            <Button Click="Button_Start_Click" ToolTip="打开串口通信">
+                                <Path Data="M1 8L4 8M4 4L4 12L8 13L8 15L12 15L12 1L8 1L8 3ZM12 4L15 4L15 12L12 12M7 5L7 11M9 5L9 11"/>
+                            </Button>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsOpen}" Value="True">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                        <Border Grid.Column="2">
+                            <Button Click="Button_Start_Click" ToolTip="关闭串口通信">
+                                <Path Data="M1 4L1 12L5 13L5 15L9 15L9 1L5 1L5 3ZM4 5L4 11M6 5L6 11M11 6L15 10M15 6L11 10"/>
+                            </Button>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsOpen}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                    </Grid>
+                    <Grid Grid.Row="1" Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="程序设置"/>
+                        <ItemsControl Grid.Column="1" Margin="4,0" VerticalAlignment="Stretch" ItemsSource="{Binding PortOption}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Content="{Binding}" Style="{StaticResource Label_Status}" Background="#FFEE44" BorderBrush="#DDAA22" Foreground="#334466" Margin="0,0,4,0" ToolTip="存储目标地址" MouseDown="Label_Folder_MouseDown"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Border Grid.Column="2">
+                            <Button Grid.Column="2" Click="Button_Option_Click" ToolTip="程序设置">
+                                <Path Data="M1 13L6 8A5 5 0 0 1 9 1L12 1L10 4L12 6L15 3A5 5 0 0 1 9 10L4 15"/>
+                            </Button>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsOpen}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                        </Border>
+                    </Grid>
+                    <Grid Grid.Row="2" Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="拉取文件"/>
+                        <TextBox Grid.Column="1" Text="{Binding PullFilePath}" Margin="4,0"/>
+                        <Button Grid.Column="2" Margin="0,0,4,0" IsEnabled="{Binding IsOpen}" Click="Button_SelectRemote_Click" ToolTip="选择远端文件">
+                            <Path Data="M10 4L9 4L7 3L2 3L1 4L1 13M13 13L15 7L3 7L1 13ZM11 3L15 3M13 1L13 5"/>
+                        </Button>
+                        <Button Grid.Column="3" Click="Button_Pull_Click" IsEnabled="{Binding IsOpen}" ToolTip="拉取文件">
+                            <Path Data="M15 11L15 4L13 4L11 3L6 3L4 4L4 8M4 12L4 13L6 13M9 13L15 13L15 11M4 6L11 6L13 4M1 10L9 10M7 8L9 10L7 12"/>
+                        </Button>
+                    </Grid>
+                    <Grid Grid.Row="3" Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="发送文件"/>
+                        <TextBox Grid.Column="1" Text="{Binding SelectedFilePath}" Margin="4,0"/>
+                        <Button Grid.Column="2" Margin="0,0,4,0" Click="Button_Select_Click" ToolTip="选择文件">
+                            <Path Data="M13 7L13 4L11 4L9 4L7 3L2 3L1 4L1 13M13 13L15 7L3 7L1 13Z"/>
+                        </Button>
+                        <Button Grid.Column="3" Click="Button_Push_Click" IsEnabled="{Binding IsOpen}" ToolTip="发送文件">
+                            <Path Data="M11 7L11 4L9 4L7 3L2 3L1 4L1 13L11 13L11 11M1 6L7 6L9 4M7 9L15 9M13 7L15 9L13 11"/>
+                        </Button>
+                    </Grid>
+                    <Grid Grid.Row="4" Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="计划任务"/>
+                        <Button Grid.Column="1" Margin="4,0,0,0" Click="Button_Task_Click" ToolTip="计划任务管理">
+                            <Path Data="M1 3L3 5L6 2M8 3L15 3M1 8L3 10L6 7M8 8L15 8M1 13L3 15L6 12M8 13L15 13"/>
+                        </Button>
+                    </Grid>
+                    <Grid Grid.Row="5" Margin="0,2">
+                        <ListBox ItemsSource="{Binding TaskList, Source={x:Static local:TaskManager.Instance}}"/>
+                    </Grid>
+                    <Grid Grid.Row="6" Margin="0,2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="工作日志"/>
+                        <Button Grid.Column="1" Margin="4,0,0,0" Click="Button_ClearLog_Click" ToolTip="清除工作日志">
+                            <Path Data="M12 3L12 1L1 1L1 15L9 15M3 4L10 4M15 2L11 9M4 10L9 7L14 10L14 15Z"/>
+                        </Button>
+                    </Grid>
+                    <Grid Grid.Row="7" Margin="0,2">
+                        <ListBox local:ListBoxBehavior.ScrollOnNewItem="True" ItemsSource="{Binding LogList}"/>
+                    </Grid>
+                    <Grid Grid.Row="8" Margin="0,2" x:Name="GridTransfer">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="传输记录"/>
+                        <Button Grid.Column="1" Margin="4,0,0,0" Click="Button_ClearRecord_Click" ToolTip="清除传输记录">
+                            <Path Data="M12 3L12 1L1 1L1 15L9 15M3 4L10 4M15 2L11 9M4 10L9 7L14 10L14 15Z"/>
+                        </Button>
+                    </Grid>
+                    <Grid Grid.Row="9" Margin="0,2" x:Name="GridTransferList">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <ListBox Grid.Row="0" local:ListBoxBehavior.ScrollOnNewItem="True" ItemsSource="{Binding RecordList}"/>
+                        <Grid Grid.Row="1" Margin="0,4,0,0">
+                            <Border BorderThickness="1" BorderBrush="#9AD" Background="White">
+                                <Border Background="#AEF">
+                                    <Border.RenderTransform>
+                                        <ScaleTransform ScaleX="{Binding SendPercent}"/>
+                                    </Border.RenderTransform>
+                                </Border>
+                            </Border>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
+                                <TextBlock Text="发送进度："/>
+                                <TextBlock Text="{Binding SendProgress}"/>
+                                <TextBlock Text="剩余时间：" Margin="8,0,0,0"/>
+                                <TextBlock Text="{Binding SendTimeText}"/>
+                            </StackPanel>
+                            <Border Width="16" Height="16" Padding="2" HorizontalAlignment="Right" Margin="4,0" MouseUp="Border_StopSending_MouseUp">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderBrush" Value="#666"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#FF3322"/>
+                                                <Setter Property="BorderBrush" Value="#FFF"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Path Width="12" Height="12" Data="M1 1L11 11M1 11L11 1" Stroke="{Binding Path=BorderBrush, RelativeSource={RelativeSource AncestorType=Border}}" StrokeThickness="1"/>
+                            </Border>
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SendMax}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                        </Grid>
+                        <Grid Grid.Row="2" Margin="0,4,0,0">
+                            <Border BorderThickness="1" BorderBrush="#9AD" Background="White">
+                                <Border Background="#AEF">
+                                    <Border.RenderTransform>
+                                        <ScaleTransform ScaleX="{Binding ReceivePercent}"/>
+                                    </Border.RenderTransform>
+                                </Border>
+                            </Border>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="2,4">
+                                <TextBlock Text="接收进度："/>
+                                <TextBlock Text="{Binding ReceiveProgress}"/>
+                                <TextBlock Text="剩余时间：" Margin="8,0,0,0"/>
+                                <TextBlock Text="{Binding ReceiveTimeText}"/>
+                            </StackPanel>
+                            <Border Width="16" Height="16" Padding="2" HorizontalAlignment="Right" Margin="4,0" MouseUp="Border_StopReceiving_MouseUp">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderBrush" Value="#666"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#FF3322"/>
+                                                <Setter Property="BorderBrush" Value="#FFF"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Path Width="12" Height="12" Data="M1 1L11 11M1 11L11 1" Stroke="{Binding Path=BorderBrush, RelativeSource={RelativeSource AncestorType=Border}}" StrokeThickness="1"/>
+                            </Border>
+                            <Grid.Style>
+                                <Style TargetType="Grid">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ReceiveMax}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                <ControlTemplate.Triggers>
+                    <DataTrigger Binding="{Binding ActualWidth, RelativeSource={RelativeSource Self}, Converter={StaticResource IsMoreThanConverter}, ConverterParameter=840}" Value="True">
+                        <Setter TargetName="GridColumnSecond" Property="Width" Value="4"/>
+                        <Setter TargetName="GridColumnThird" Property="Width" Value="*"/>
+                        <Setter TargetName="GridRowTransfer" Property="Height" Value="0"/>
+                        <Setter TargetName="GridTransfer" Property="Grid.Column" Value="2"/>
+                        <Setter TargetName="GridTransfer" Property="Grid.Row" Value="0"/>
+                        <Setter TargetName="GridTransferList" Property="Grid.Column" Value="2"/>
+                        <Setter TargetName="GridTransferList" Property="Grid.Row" Value="1"/>
+                        <Setter TargetName="GridTransferList" Property="Grid.RowSpan" Value="9"/>
+                    </DataTrigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Control.Template>
+    </Control>
 </Window>

@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Reflection;
+using System.Windows.Data;
 
 namespace ComTransfer
 {
@@ -37,6 +39,20 @@ namespace ComTransfer
         protected void Notify(string name)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+    }
+
+    public class IsMoreThanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            bool flag = (double)value > double.Parse(parameter.ToString());
+            return flag;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
         }
     }
 }
