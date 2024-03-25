@@ -361,27 +361,48 @@ namespace ComTransfer
         /// <returns>文件保存地址</returns>
         public string GetDirectory(string extension, string filename)
         {
+            string target;
             string path = GetLocation(filename);
             if (path != null)
             {
-                return path;
+                target = path;
             }
-            if (extension == null)
+            else if (extension == null)
             {
-                return DefaultDirectory;
+                target = DefaultDirectory;
             }
-            if (directoryDict == null)
+            else if (directoryDict == null)
             {
-                return DefaultDirectory;
+                target = DefaultDirectory;
             }
             else if (!directoryDict.ContainsKey(extension.ToUpper()))
             {
-                return directoryDict["*"];
+                target = directoryDict["*"];
             }
             else
             {
-                return directoryDict[extension.ToUpper()];
+                target = directoryDict[extension.ToUpper()];
             }
+            if (string.IsNullOrEmpty(target))
+            {
+                AddLog("程序故障", "无法正确找到目标存储位置：" + filename);
+            }
+            else
+            {
+                try
+                {
+                    if (!Directory.Exists(target))
+                    {
+                        AddLog("操作记录", "正在建立新文件夹：" + target);
+                        Directory.CreateDirectory(target);
+                    }
+                }
+                catch
+                {
+                    AddLog("程序故障", "无法建立文件夹：" + target);
+                }
+            }
+            return target;
         }
 
         /// <summary>
