@@ -43,9 +43,9 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,6,0" DockPanel.Dock="Right">
                     <Label Content="数据位"/>
-                    <TextBox Text="{Binding DataBits}" MaxLength="1"/>
+                    <TextBox Text="{Binding DataBits}" MaxLength="1" IsReadOnly="True"/>
                     <Label Content="停止位"/>
-                    <TextBox Text="{Binding StopBits}" MaxLength="1"/>
+                    <TextBox Text="{Binding StopBits}" MaxLength="1" IsReadOnly="True"/>
                 </StackPanel>
                 <TextBox Text="{Binding BaudRate}" MaxLength="7" Margin="0,2"/>
             </DockPanel>
@@ -55,15 +55,15 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0,0,4,0" DockPanel.Dock="Right">
                     <Label Content="HW"/>
-                    <CheckBox IsChecked="{Binding IsHW}"/>
+                    <CheckBox IsChecked="{Binding IsHW}" IsEnabled="False"/>
                     <Label Content="SW"/>
-                    <CheckBox IsChecked="{Binding IsSW}"/>
+                    <CheckBox IsChecked="{Binding IsSW}" IsEnabled="False"/>
                     <Label Content="DTR"/>
-                    <CheckBox IsChecked="{Binding IsDTR}"/>
+                    <CheckBox IsChecked="{Binding IsDTR}" IsEnabled="False"/>
                     <Label Content="RTS"/>
-                    <CheckBox IsChecked="{Binding IsRTS}"/>
+                    <CheckBox IsChecked="{Binding IsRTS}" IsEnabled="False"/>
                 </StackPanel>
-                <TextBox Text="{Binding Parity}" MaxLength="6" Margin="0,2"/>
+                <TextBox Text="{Binding Parity}" MaxLength="6" Margin="0,2" IsReadOnly="True"/>
             </DockPanel>
             <DockPanel Width="380" LastChildFill="True">
                 <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">

@@ -23,7 +23,7 @@ namespace ComTransfer
     /// </summary>
     public partial class ConfigWindow : Window
     {
-        private static readonly bool IsWindowsXP = true || Environment.OSVersion.Version.Major == 5 && Environment.OSVersion.Version.Minor == 1;
+        private static readonly bool IsWindowsXP = Environment.OSVersion.Version.Major == 5 && Environment.OSVersion.Version.Minor == 1;
         public int PortID { get; set; } = 1;
         public int BaudRate { get; set; } = 9600;
         public int DataBits { get; set; } = 8;
@@ -152,29 +152,19 @@ namespace ComTransfer
         {
             try
             {
-                Configuration configuration = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                foreach (var pair in dict)
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                foreach (var item in dict)
                 {
-                    object param = pair.Value;
-                    string key = pair.Key;
-                    if (param != null)
+                    if (config.AppSettings.Settings[item.Key] == null)
                     {
-                        if (configuration.AppSettings.Settings.AllKeys.Contains(key))
-                        {
-                            configuration.AppSettings.Settings[key].Value = param.ToString();
-                        }
-                        else
-                        {
-
-                            configuration.AppSettings.Settings.Add(key, param.ToString());
-                        }
+                        config.AppSettings.Settings.Add(item.Key, item.Value.ToString());
                     }
                     else
                     {
-                        configuration.AppSettings.Settings.Remove(key);
+                        config.AppSettings.Settings[item.Key].Value = item.Value.ToString();
                     }
                 }
-                configuration.Save(ConfigurationSaveMode.Minimal, true);
+                config.Save(ConfigurationSaveMode.Modified);
                 ConfigurationManager.RefreshSection("appSettings");
             }
             catch
