@@ -46,8 +46,15 @@ namespace ComTransfer
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            bool flag = (double)value > double.Parse(parameter.ToString());
-            return flag;
+            try
+            {
+                bool flag = (double)value > double.Parse(parameter.ToString());
+                return flag;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

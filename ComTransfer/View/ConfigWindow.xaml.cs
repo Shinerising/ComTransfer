@@ -23,11 +23,7 @@ namespace ComTransfer
     /// </summary>
     public partial class ConfigWindow : Window
     {
-        private static readonly bool IsWindowsXP = Environment.OSVersion.Version.Major == 5 && Environment.OSVersion.Version.Minor == 1;
-        /// <summary>
-        /// 启动运行注册表位置
-        /// </summary>
-        private static readonly RegistryKey regPath = IsWindowsXP ? Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon", true) : Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+        private static readonly bool IsWindowsXP = true || Environment.OSVersion.Version.Major == 5 && Environment.OSVersion.Version.Minor == 1;
         public int PortID { get; set; } = 1;
         public int BaudRate { get; set; } = 9600;
         public int DataBits { get; set; } = 8;
@@ -43,41 +39,58 @@ namespace ComTransfer
         {
             get
             {
-                if (IsWindowsXP)
+                try
                 {
-                    return regPath.GetValue("shell") != null && regPath.GetValue("shell").ToString().Contains(Process.GetCurrentProcess().MainModule.FileName);
+                    RegistryKey regPath = IsWindowsXP ? Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon", true) : Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    if (IsWindowsXP)
+                    {
+                        return regPath.GetValue("Shell") != null && regPath.GetValue("Shell").ToString().Contains(Process.GetCurrentProcess().MainModule.FileName);
+                    }
+                    return regPath.GetValue(Process.GetCurrentProcess().ProcessName) != null;
                 }
-                return regPath.GetValue(Process.GetCurrentProcess().ProcessName) != null;
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.Message, "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return false;
+                }
             }
             set
             {
-                if (IsWindowsXP)
+                try
                 {
-                    string text = regPath.GetValue("shell")?.ToString();
-                    if (value)
+                    RegistryKey regPath = IsWindowsXP ? Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon", true) : Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+                    if (IsWindowsXP)
                     {
-                        regPath.SetValue("shell", text == null ? Process.GetCurrentProcess().MainModule.FileName : string.Join(",", text, Process.GetCurrentProcess().MainModule.FileName));
+                        string text = regPath.GetValue("Shell")?.ToString();
+                        if (value)
+                        {
+                            regPath.SetValue("Shell", text == null ? Process.GetCurrentProcess().MainModule.FileName : string.Join(",", text, Process.GetCurrentProcess().MainModule.FileName));
+                        }
+                        else
+                        {
+                            if (text == null)
+                            {
+                                return;
+                            }
+                            var frags = text.Split(',').Where(item => !item.Contains(Process.GetCurrentProcess().MainModule.FileName)).ToList();
+                            regPath.SetValue("Shell", string.Join(",", frags));
+                        }
                     }
                     else
                     {
-                        if (text == null)
+                        if (value)
                         {
-                            return;
+                            regPath.SetValue(Process.GetCurrentProcess().ProcessName, Process.GetCurrentProcess().MainModule.FileName);
                         }
-                        var frags = text.Split(',').Where(item => !item.Contains(Process.GetCurrentProcess().MainModule.FileName)).ToList();
-                        regPath.SetValue("shell", string.Join(",", frags));
+                        else
+                        {
+                            regPath.DeleteValue(Process.GetCurrentProcess().ProcessName, false);
+                        }
                     }
                 }
-                else
+                catch (Exception e)
                 {
-                    if (value)
-                    {
-                        regPath.SetValue(Process.GetCurrentProcess().ProcessName, Process.GetCurrentProcess().MainModule.FileName);
-                    }
-                    else
-                    {
-                        regPath.DeleteValue(Process.GetCurrentProcess().ProcessName, false);
-                    }
+                    MessageBox.Show(e.Message, "提示", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }

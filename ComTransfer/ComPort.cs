@@ -92,7 +92,7 @@ namespace ComTransfer
         /// <summary>
         /// 串口文件保存地址设置
         /// </summary>
-        public List<string> PortOption => directoryDict.Select(item => string.Format("{0}>[{1}]", item.Key, item.Value)).ToList();
+        public List<KeyValuePair<string, string>> PortOption => directoryDict.Count == 0 ? new List<KeyValuePair<string, string>>() : directoryDict.Keys.Select(item => new KeyValuePair<string, string>(item, string.Format("{0}>[{1}]", item, directoryDict[item]))).ToList();
         /// <summary>
         /// 文件保存地址字典
         /// </summary>
